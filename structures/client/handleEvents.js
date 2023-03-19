@@ -8,7 +8,7 @@ const { message } = require('../messages/message.js');
  * @param {Object} msg
  * @returns {Promise<Boolean>}
  */
-module.exports = async function handleEvents(msgObj) {
+module.exports = async function handleEvents(msgObj, token) {
     return new Promise((resolve, reject) => {
         const op = msgObj["op"];
         const t = msgObj["t"];
@@ -18,7 +18,7 @@ module.exports = async function handleEvents(msgObj) {
         if (op == 0 && t == gateWayEvents.Ready) {
             resolve({op: op, t: t, config: msgObj["d"]["user_settings"], profile: msgObj["d"]["user"] });
         } else if (t == gateWayEvents.MessageCreate) {
-            const msg = new message(msgObj["d"]);
+            const msg = new message(msgObj["d"], token);
             resolve({op: op, t: t, message: msg});
         }
         

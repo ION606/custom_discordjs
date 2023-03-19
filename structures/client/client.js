@@ -5,6 +5,7 @@ var WebSocketClient = require('websocket').client;
 const WebSocketConnection = require('websocket').connection;
 const handleResponses = require('./handleEvents.js');
 const { EventEmitter } = require('events');
+const axios = require('axios');
 
 
 
@@ -20,6 +21,9 @@ class Client extends EventEmitter {
     
     /** @type {String} */
     #token;
+    
+    /** @type {String} */
+    id;
 
     /** @type {WebSocketConnection}*/
     connection;
@@ -56,8 +60,8 @@ class Client extends EventEmitter {
         var idObj = {
             op: 2,
             d: {
-                token: this.#token,
-                intents: this.gwintents.value, //61440,
+                token: this.#token.replace("Bot ", ""),
+                intents: iCount, //61440,
                 properties: {
                     os: "linux",
                     browser: "ion_",
@@ -86,42 +90,53 @@ class Client extends EventEmitter {
     /**
      * @param {String} token
      */
-    async login(token) {
-        this.ws = new WebSocketClient({maxReceivedFrameSize: Infinity});
-        this.#token = token;
+    async login(token, isUser = false) {
+        if (!isUser) token = "Bot " + token;
+        
+        return new Promise((resolve, reject) => {
+            this.ws = new WebSocketClient({maxReceivedFrameSize: Infinity});
+            this.#token = token;
 
-        this.ws.on('connect', async (connection) => {
-            connection.on('message', async (msg) => {
-                const data = JSON.parse(msg.utf8Data);
+            this.ws.on('connect', async (connection) => {
+                connection.on('message', async (msg) => {
+                    const data = JSON.parse(msg.utf8Data);
 
-                const response = await handleResponses(data);
+                    const response = await handleResponses(data, token);
 
-                if (response.op == 10) { this.#startHeartBeat(response.heartBeat, token); }
-                else if (response.op == 0) {
-                    if (response.t == gateWayEvents.Ready) {
-                        this.user_profile = response.profile;
-                        this.user_settings = response.config;
-                        this.ready();
+                    if (response.op == 10) { this.#startHeartBeat(response.heartBeat, token); }
+                    else if (response.op == 0) {
+                        if (response.t == gateWayEvents.Ready) {
+                            this.user_profile = response.profile;
+                            this.user_settings = response.config;
+                            this.id = response.profile.id;
+                            this.ready();
+                        }
+                        else if (response.t == gateWayEvents.MessageCreate) {
+                            if (data["d"]["author"]["id"] != this.user_profile.id){
+                                this.messageRecieved(response.message);
+                            }
+                        }
+                        else console.log(response.t);
+                    } else {
+                        console.log(response.t);
                     }
-                    else if (response.t == gateWayEvents.MessageCreate) {
-                        this.messageRecieved(response.message);
-                    }
-                    else console.log(response.t);
-                } else {
-                    console.log(response.t);
-                }
+                });
+
+                connection.on('close', (code, desc) => {
+                    console.log(`CONNECTION CLOSED WITH CODE ${code}\nREASON:\n ${desc}`);
+                });
+
+                connection.on('error', (err) => {
+                    reject(err);
+                });
+
+                this.connection = connection;
             });
 
-            connection.on('close', (code, desc) => {
-                console.log(`CONNECTION CLOSED WITH CODE ${code}\nREASON:\n ${desc}`);
-            });
+            this.ws.on('connectFailed', (err) => { reject(err); });
 
-            this.connection = connection;
+            this.ws.connect("wss://gateway.discord.gg/?v=10&encoding=json");
         });
-
-        this.ws.on('connectFailed', (err) => { console.error(err); })
-
-        this.ws.connect("wss://gateway.discord.gg/?v=10&encoding=json");
     }
 }
 
