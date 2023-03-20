@@ -18,7 +18,7 @@ class Channel {
 
     /**
      * @param {Object} inp 
-     * @returns {message}
+     * @returns {Promise<message>}
      */
     async send(inp) {
         return new Promise(async (resolve) => {
@@ -191,4 +191,4 @@ class message {
 }
 
 
-module.exports = { message, messageChannelTypes };
+module.exports = { message, messageChannelTypes, Channel };

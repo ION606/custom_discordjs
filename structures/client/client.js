@@ -6,6 +6,7 @@ const WebSocketConnection = require('websocket').connection;
 const handleResponses = require('./handleEvents.js');
 const { EventEmitter } = require('events');
 const axios = require('axios');
+const { exit } = require('process');
 
 
 
@@ -43,6 +44,15 @@ class Client extends EventEmitter {
         this.gwintents = input.intents;
     }
 
+    async #heartbeat(hbInt, hbSequence) {
+        const toSend = JSON.stringify({ op: 1, d: 0 });
+        this.connection.send((toSend));
+        
+        setInterval(() => {
+            this.connection.send(toSend);
+        }, hbInt);
+    }
+
     /**
      * @param {Number} hbint
      */
@@ -71,6 +81,7 @@ class Client extends EventEmitter {
         };
 
         this.connection.send(JSON.stringify(idObj));
+        this.#heartbeat(hbint);
     }
 
 
@@ -86,6 +97,9 @@ class Client extends EventEmitter {
         this.emit('error', err);
     }
 
+    interactionRecieved(interaction) {
+        this.emit('interactionRecieved', interaction);
+    }
 
     /**
      * @param {String} token
@@ -101,7 +115,7 @@ class Client extends EventEmitter {
                 connection.on('message', async (msg) => {
                     const data = JSON.parse(msg.utf8Data);
 
-                    const response = await handleResponses(data, token);
+                    const response = await handleResponses(data, token, this.id);
 
                     if (response.op == 10) { this.#startHeartBeat(response.heartBeat, token); }
                     else if (response.op == 0) {
@@ -116,6 +130,11 @@ class Client extends EventEmitter {
                                 this.messageRecieved(response.message);
                             }
                         }
+                        else if (response.t == gateWayEvents.InteractionCreate) {
+                            if (data["d"]["user"]["id"] != this.user_profile.id) {
+                                this.interactionRecieved(response.interaction);
+                            }
+                        }
                         else console.log(response.t);
                     } else {
                         console.log(response.t);
@@ -124,6 +143,7 @@ class Client extends EventEmitter {
 
                 connection.on('close', (code, desc) => {
                     console.log(`CONNECTION CLOSED WITH CODE ${code}\nREASON:\n ${desc}`);
+                    exit(1);
                 });
 
                 connection.on('error', (err) => {
