@@ -7,6 +7,7 @@ const handleResponses = require('./handleEvents.js');
 const { EventEmitter } = require('events');
 const axios = require('axios');
 const { exit } = require('process');
+const Guild = require('../guilds/guild.js');
 
 
 
@@ -35,6 +36,9 @@ class Client extends EventEmitter {
     /** @type {Object} */
     user_profile;
 
+    /** @type {Map<String, Guild>} */
+    guilds;
+
 
     /**
      * @param {opts} input 
@@ -42,6 +46,7 @@ class Client extends EventEmitter {
     constructor(input) {
         super();
         this.gwintents = input.intents;
+        this.guilds = new Map();
     }
 
     async #heartbeat(hbInt, hbSequence) {
@@ -85,6 +90,7 @@ class Client extends EventEmitter {
     }
 
 
+    //#region Event Emitters
     messageRecieved(msg) {
         this.emit("messageRecieved", msg);
     }
@@ -102,6 +108,26 @@ class Client extends EventEmitter {
     }
 
     /**
+     * @param {Guild} guild 
+     */
+    guildCreate(guild) {
+        if (!this.guilds.has(guild.id)) {
+            this.guilds.set(guild.id, guild);
+            this.emit('guildCreate', guild);
+        }
+    }
+
+    guildDelete(guild) {
+        this.emit('guildDelete', guild);
+    }
+
+    guildMemberAdd(member) {
+        this.emit('guildMemberAdd', member);
+    }
+    //#endregion
+
+
+    /**
      * @param {String} token
      */
     async login(token, isUser = false) {
@@ -114,7 +140,6 @@ class Client extends EventEmitter {
             this.ws.on('connect', async (connection) => {
                 connection.on('message', async (msg) => {
                     const data = JSON.parse(msg.utf8Data);
-
                     const response = await handleResponses(data, token, this.id);
 
                     if (response.op == 10) { this.#startHeartBeat(response.heartBeat, token); }
@@ -123,6 +148,7 @@ class Client extends EventEmitter {
                             this.user_profile = response.profile;
                             this.user_settings = response.config;
                             this.id = response.profile.id;
+                            console.log(response.guilds);
                             this.ready();
                         }
                         else if (response.t == gateWayEvents.MessageCreate) {
@@ -135,6 +161,9 @@ class Client extends EventEmitter {
                                 this.interactionRecieved(response.interaction);
                             }
                         }
+                        else if (response.t == gateWayEvents.GuildCreate) this.guildCreate(response.guild);
+                        else if (response.t == gateWayEvents.GuildDelete) this.guildDelete(response.guild);
+                        else if (response.t == gateWayEvents.GuildMemberAdd) this.guildMemberAdd(response.member);
                         else console.log(response.t);
                     } else {
                         console.log(response.t);

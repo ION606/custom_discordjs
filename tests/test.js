@@ -32,6 +32,11 @@ c.on('interactionRecieved', /** @param {Interaction} interaction*/ async (intera
 });
 
 
+c.on('guildCreate', async (guild) => {
+    require('./guildTests.js')(c);
+});
+
+
 c.on('ready', () => {
     console.log("BOT ONLINE!");
 });
