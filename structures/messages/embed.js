@@ -1,6 +1,6 @@
-const colConvert = require('../../utils/color_functions.js');
+import colConvert from '../../utils/color_functions.js';
 
-class Embed {
+export class Embed {
     /** @type {Number} */
     color;
     
@@ -123,5 +123,3 @@ class Embed {
     }
     //#endregion
 }
-
-module.exports = Embed;

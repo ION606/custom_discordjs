@@ -1,8 +1,13 @@
-class member {
+import axios from 'axios';
+import {guildRole, guildMemberRoleManager} from "./guildRoles.js";
+// https://discord.com/developers/docs/resources/guild#modify-guild-member
+
+
+export default class member {
     /** @type {Object} */
     user;
 
-    /** @type {Object[]} */
+    /** @type {guildMemberRoleManager} */
     roles;
 
     /** @type {String} */
@@ -32,14 +37,12 @@ class member {
     /** @type {String} */
     avatar;
 
-    constructor(o) {
+    constructor(o, roles) {
+        this.roles = roles;
         for (const k in this) {
-            if (o[k]) {
+            if (o[k] && k != 'roles') {
                 this[k] = o[k];
             }
         }
     }
 }
-
-
-module.exports = member;

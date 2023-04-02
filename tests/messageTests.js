@@ -1,7 +1,9 @@
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-const {message, Embed, messageChannelTypes} = require('../structures/types');
+import {message, Embed, messageChannelTypes} from '../structures/types.js';
 
-module.exports = /** @param {message} message */ async (message) => {
+
+/** @param {message} message */
+export default async (message) => {
     if (message.type == messageChannelTypes.DM) {
         const embd = new Embed()
         .setTitle("hello world")
@@ -17,5 +19,7 @@ module.exports = /** @param {message} message */ async (message) => {
 
         const response3 = await response.edit("KAT");
         console.log(response3);
+    } else {
+        console.log(message);
     }
 }

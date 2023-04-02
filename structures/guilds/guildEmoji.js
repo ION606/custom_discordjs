@@ -1,4 +1,4 @@
-class GuildEmoji {
+export default class GuildEmoji {
     /** @type {Number} */
     version;
 
@@ -23,6 +23,3 @@ class GuildEmoji {
     /** @type {Boolean} */
     animated;
 }
-
-
-module.exports = GuildEmoji;

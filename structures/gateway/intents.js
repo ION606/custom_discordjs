@@ -1,4 +1,4 @@
-module.exports = Object.freeze({
+export const gateWayIntents = Object.freeze({
     Guilds: 1 << 0,
     GuildMembers: 1 << 1,
     GuildModeration: 1 << 2,

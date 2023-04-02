@@ -1,8 +1,5 @@
-const {message} = require('./messages/message');
-const {Client, gateWayIntents} = require('./client/client.js');
-const Embed = require('./messages/embed');
-const messageChannelTypes = require('./messages/messageChannelTypes');
-const Interaction = require('./interactions/interaction.js');
-
-
-module.exports = { message, Client, gateWayIntents, Embed, messageChannelTypes, Interaction }
+export {message} from './messages/message.js';
+export {Client, gateWayIntents} from './client/client.js';
+export {Embed} from './messages/embed.js';
+export {messageChannelTypes} from './messages/messageChannelTypes.js';
+export {Interaction} from './interactions/interaction.js';

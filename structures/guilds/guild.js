@@ -1,12 +1,14 @@
-const axios = require('axios');
-const member = require('./member.js');
-const guildRole = require('./guildRoles.js');
-const GuildEmoji = require('./guildEmoji.js');
-const { Channel } = require('../messages/message.js');
+import axios from 'axios';
+import member from './member.js';
+import {guildRole, guildRoleManager, guildMemberRoleManager} from './guildRoles.js';
+import GuildEmoji from './guildEmoji.js';
+import {Channel} from '../messages/message.js';
+import guildInvite from './guildInvite.js';
 
 //See https://discord.com/developers/docs/resources/guild
 
-class Guild {
+export default class Guild {
+    #token;
 
     /** @type {String[]} */
     embeded_activities;
@@ -26,7 +28,7 @@ class Guild {
     /** @type {Boolean} */
     nsfw;
 
-    /** @type {member[]} */
+    /** @type {Map<String, member>} */
     members;
 
     /** @type {String} */
@@ -44,7 +46,7 @@ class Guild {
     /** @type {Map<String, member>} */
     members;
 
-    /** @type {guildRole[]} */
+    /** @type {guildRoleManager} */
     roles;
 
     /** @type {String} */
@@ -107,39 +109,74 @@ class Guild {
         
         for (const channel of response.data) {
             if (channel.type == 4) continue;
-            this.channels.set(channel.id, new Channel(token, channel.id));
+            this.channels.set(channel.id, new Channel(token, channel, this));
         }
     }
 
+
+    async #getMembers(membersObj, token) {
+        for (const m of membersObj) {
+            var tempRoles = [];
+            for (const rid of m["roles"]) {
+                tempRoles.push(this.roles.cache.get(rid));
+            }
+
+            const roleTemp = new guildMemberRoleManager(tempRoles, m["user"]["id"], token);
+            roleTemp.guild = this;
+            const mem = new member(m, roleTemp);
+            
+            this.members.set(mem.user.id, mem);
+        }
+    }
+
+    /**
+     * @returns {Promise<guildInvite[]>}
+     */
+    getInvites() {
+        return new Promise(async (resolve, reject) => {
+            const config = {
+                headers: {
+                    Authorization: this.#token
+                }
+            }
+    
+            const response = await axios.get(`https://discord.com/api/guilds/${this.id}/invites`, config);
+            const invites = [];
+            for (const i of response.data) {
+                invites.push(new guildInvite(i, this, this.#token));
+            }
+
+            resolve(invites);
+        });
+    }
+
+    /**
+     * @param {Object} o 
+     * @param {String} token 
+     */
     constructor(o, token) {
         this.members = new Map();
         this.channels = new Map();
-        this.roles = [];
         this.stickers = [];
+        this.#token = token;
 
         for (const field in this) {
-            if (o[field] == undefined || field == "channels") continue;
+            if (o[field] == undefined || field == "channels" || field == "members") continue;
 
-            if (field == 'members') {
-                for (const m of o[field]) {
-                    const mem = new member(m);
-                    this.members.set(mem.user.id);
-                }
-            }
-            else if (field == 'roles') {
+            if (field == 'roles') {
+                var temp = [];
                 for (const r of o[field]) {
-                    this.roles.push(new guildRole(r));
+                    temp.push(new guildRole(r));
                 }
+                this.roles = new guildRoleManager(temp, false, token);
+                this.roles.guild = this;
             }
             else {
                 this[field] = o[field];
             }
         }
 
+        this.#getMembers(o["members"], token);
         this.#getChannels(token);
     }
 }
-
-
-
-module.exports = Guild;

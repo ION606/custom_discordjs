@@ -1,7 +1,8 @@
-const { Interaction } = require('../structures/types');
+import { Interaction } from '../structures/types.js';
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-module.exports = /** @param {Interaction} interaction */ async (interaction) => {
+/** @param {Interaction} interaction */
+export default async (interaction) => {
     interaction.reply({content: "HELLO WORLD", ephemeral: true});
     await delay(3000);
     interaction.update({content: "NOOOOOOOOOOOOOOOOOO"});

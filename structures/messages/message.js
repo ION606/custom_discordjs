@@ -1,19 +1,68 @@
-const messageChannelTypes = require('./messageChannelTypes.js');
-const author = require('./author.js');
-const axios = require('axios');
-const Embed = require('./embed');
+import author from './author.js';
+import axios from 'axios';
 
 
-class Channel {
+export class Channel {
     /** @type {String} */
     id;
 
     /** @type {String} */
+    name;
+
+    /** @type {String} */
+    last_message_id;
+
+    /** @type {Number} */
+    type;
+
+    /** @type {Number} */
+    position;
+
+    /** @type {Number} */
+    flags;
+
+    /** @type {String} */
+    parent_id;
+
+    /** @type {import('../guilds/Guild.js').def} */
+    guild;
+
+    /** @type {[{id: String, type: String, allow: Number, deny: Number, allow_new: String, deny_nwe: String}]} */
+    permission_overwrites;
+
+    /** @type {Number} */
+    rate_limit_per_user;
+
+    /** @type {Boolean} */
+    nsfw;
+
+    /** @type {String} */
     #token;
 
-    constructor(token, id) {
+
+    async getChannelData() {
+        const headers = {
+            Authorization: this.#token
+        }
+
+        const response = await axios.get(`https://discord.com/api/channels/${this.id}`, { headers });
+        const channelData = response.data;
+        
+        for (const k in this) {
+            if (channelData[k]) {
+                this[k] = channelData[k];
+            }
+        }
+    }
+
+
+    constructor(token, channel, guild) {
         this.#token = token;
-        this.id = id;
+        for (const k in this) {
+            if (channel[k]) this[k] = channel[k];
+        }
+
+        this.guild = guild;
     }
 
     /**
@@ -49,11 +98,11 @@ class Channel {
 }
 
 
-class message {
+export class message {
     /** @type {author} */
     author;
 
-    /** @type {Object} */
+    /** @type {String} */
     channel_id;
 
     /** @type {Object[]} */
@@ -89,6 +138,9 @@ class message {
     /** @type {Object[]} */
     embeds;
 
+    /** @type {Guild} */
+    guild;
+
     /** @type {String} */
     guild_id;
 
@@ -96,7 +148,7 @@ class message {
     type;
 
     /** @type {Channel} */
-    channel
+    channel;
 
     /** @type {String} */
     #token;
@@ -167,7 +219,7 @@ class message {
     /**
      * @param {Object} msgRaw
      */
-    constructor(msgRaw, token) {
+    constructor(msgRaw, token, guild) {
         this.#token = token;
 
         for (const k in this) {
@@ -180,7 +232,7 @@ class message {
                 }
                 else {
                     if (k == 'channel_id') {
-                        this.channel = new Channel(this.#token, msgRaw[k]);
+                        this.channel = new Channel(this.#token, {id: msgRaw[k]}, null);
                     }
 
                     this[k] = msgRaw[k];
@@ -191,4 +243,4 @@ class message {
 }
 
 
-module.exports = { message, messageChannelTypes, Channel };
+export {messageChannelTypes} from './messageChannelTypes.js';

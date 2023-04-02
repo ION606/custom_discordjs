@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     Default: 0x000000,
     White: 0xffffff,
     Aqua: 0x1abc9c,

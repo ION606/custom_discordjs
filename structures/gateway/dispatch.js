@@ -1,4 +1,4 @@
-module.exports = Object.freeze({
+export default Object.freeze({
     ApplicationCommandPermissionsUpdate: "APPLICATION_COMMAND_PERMISSIONS_UPDATE",
     ChannelCreate: "CHANNEL_CREATE",
     ChannelDelete: "CHANNEL_DELETE",

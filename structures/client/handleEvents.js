@@ -1,8 +1,7 @@
-const { exit } = require('process');
-const gateWayEvents = require('../gateway/dispatch.js');
-const { message } = require('../messages/message.js');
-const Interaction = require('../interactions/interaction.js');
-const Guild = require('../guilds/guild.js');
+import gateWayEvents from '../gateway/dispatch.js'
+import { message } from '../messages/message.js';
+import {Interaction} from '../interactions/interaction.js';
+import Guild from '../guilds/Guild.js';
 
 
 /**
@@ -10,7 +9,7 @@ const Guild = require('../guilds/guild.js');
  * @param {Object} msg
  * @returns {Promise<Boolean>}
  */
-module.exports = async function handleEvents(msgObj, token, id) {
+export default async function handleEvents(msgObj, token, id) {
     return new Promise((resolve, reject) => {
         const op = msgObj["op"];
         const t = msgObj["t"];

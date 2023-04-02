@@ -1,4 +1,4 @@
-class msgAuthor {
+export default class msgAuthor {
     /** @type {String} */
     id;
 
@@ -31,7 +31,3 @@ class msgAuthor {
         }
     }
 }
-
-
-
-module.exports = msgAuthor;

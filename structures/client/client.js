@@ -1,24 +1,23 @@
-const opts = require('./clientOpts.js');
-const gateWayIntents = require('../gateway/intents.js');
-const gateWayEvents = require('../gateway/dispatch.js');
-var WebSocketClient = require('websocket').client;
-const WebSocketConnection = require('websocket').connection;
-const handleResponses = require('./handleEvents.js');
-const { EventEmitter } = require('events');
-const axios = require('axios');
-const { exit } = require('process');
-const Guild = require('../guilds/guild.js');
+import gateWayEvents from '../gateway/dispatch.js';
+//import WebSocketClient from 'websocket';
+//import WebSocketConnection from 'websocket';
+import WebSocket from 'ws';
+import handleResponses from './handleEvents.js';
+import { EventEmitter } from 'events';
+import axios from 'axios';
+import { exit } from 'process';
+import Guild from '../guilds/Guild.js';
 
 
 
-class Client extends EventEmitter {
-    /** @type {WebSocketClient} */
+export class Client extends EventEmitter {
+    /** @type {WebSocket} */
     ws;
 
     /** @type {Number} */
     heartBeatInterval;
 
-    /** @type {Array<opts.intents>} */
+    /** @type {gateWayEvents[]} */
     gwintents;
     
     /** @type {String} */
@@ -51,10 +50,10 @@ class Client extends EventEmitter {
 
     async #heartbeat(hbInt, hbSequence) {
         const toSend = JSON.stringify({ op: 1, d: 0 });
-        this.connection.send((toSend));
+        this.ws.send((toSend));
         
         setInterval(() => {
-            this.connection.send(toSend);
+            this.ws.send(toSend);
         }, hbInt);
     }
 
@@ -65,27 +64,6 @@ class Client extends EventEmitter {
     {
         this.heartBeatInterval = hbint;
         console.log("INTERVAL SET TO: " + this.heartBeatInterval);
-
-        //Get the user intents
-        let iCount = 0;
-        for (let i of this.gwintents) {
-            iCount += (i) ? i : 0;
-        }
-
-        var idObj = {
-            op: 2,
-            d: {
-                token: this.#token.replace("Bot ", ""),
-                intents: iCount, //61440,
-                properties: {
-                    os: "linux",
-                    browser: "ion_",
-                    device: "my_library"
-                }
-            }
-        };
-
-        this.connection.send(JSON.stringify(idObj));
         this.#heartbeat(hbint);
     }
 
@@ -134,61 +112,79 @@ class Client extends EventEmitter {
         if (!isUser) token = "Bot " + token;
         
         return new Promise((resolve, reject) => {
-            this.ws = new WebSocketClient({maxReceivedFrameSize: Infinity});
+            this.ws = new WebSocket("wss://gateway.discord.gg/?v=10&encoding=json");
             this.#token = token;
 
-            this.ws.on('connect', async (connection) => {
-                connection.on('message', async (msg) => {
-                    const data = JSON.parse(msg.utf8Data);
-                    const response = await handleResponses(data, token, this.id);
-
-                    if (response.op == 10) { this.#startHeartBeat(response.heartBeat, token); }
-                    else if (response.op == 0) {
-                        if (response.t == gateWayEvents.Ready) {
-                            this.user_profile = response.profile;
-                            this.user_settings = response.config;
-                            this.id = response.profile.id;
-                            console.log(response.guilds);
-                            this.ready();
+            this.ws.on('open', () => {
+                //Get the user intents
+                let iCount = 0;
+                for (let i of this.gwintents) {
+                    iCount += (i) ? i : 0;
+                }
+                
+                var idObj = {
+                    op: 2,
+                    d: {
+                        token: token.replace("Bot ", ""),
+                        intents: iCount, //61440,
+                        properties: {
+                            os: "linux",
+                            browser: "ion_",
+                            device: "my_library"
                         }
-                        else if (response.t == gateWayEvents.MessageCreate) {
-                            if (data["d"]["author"]["id"] != this.user_profile.id){
-                                this.messageRecieved(response.message);
-                            }
-                        }
-                        else if (response.t == gateWayEvents.InteractionCreate) {
-                            if (data["d"]["user"]["id"] != this.user_profile.id) {
-                                this.interactionRecieved(response.interaction);
-                            }
-                        }
-                        else if (response.t == gateWayEvents.GuildCreate) this.guildCreate(response.guild);
-                        else if (response.t == gateWayEvents.GuildDelete) this.guildDelete(response.guild);
-                        else if (response.t == gateWayEvents.GuildMemberAdd) this.guildMemberAdd(response.member);
-                        else console.log(response.t);
-                    } else {
-                        console.log(response.t);
                     }
-                });
-
-                connection.on('close', (code, desc) => {
-                    console.log(`CONNECTION CLOSED WITH CODE ${code}\nREASON:\n ${desc}`);
-                    exit(1);
-                });
-
-                connection.on('error', (err) => {
-                    reject(err);
-                });
-
-                this.connection = connection;
+                };
+        
+                this.ws.send(JSON.stringify(idObj));
             });
 
-            this.ws.on('connectFailed', (err) => { reject(err); });
+            this.ws.on('message', async (msg) => {
+                const data = JSON.parse(msg.toString());
+                const response = await handleResponses(data, token, this.id);
 
-            this.ws.connect("wss://gateway.discord.gg/?v=10&encoding=json");
+                if (response.op == 10) { this.#startHeartBeat(response.heartBeat, token); }
+                else if (response.op == 0) {
+                    if (response.t == gateWayEvents.Ready) {
+                        this.user_profile = response.profile;
+                        this.user_settings = response.config;
+                        this.id = response.profile.id;
+                        console.log(response.guilds);
+                        this.ready();
+                    }
+                    else if (response.t == gateWayEvents.MessageCreate) {
+                        if (data["d"]["author"]["id"] != this.user_profile.id){
+                            response.message.guild = this.guilds.get(response.message.guild_id);
+                            this.messageRecieved(response.message);
+                        }
+                    }
+                    else if (response.t == gateWayEvents.InteractionCreate) {
+                        if (data["d"]["user"]["id"] != this.user_profile.id) {
+                            this.interactionRecieved(response.interaction);
+                        }
+                    }
+                    else if (response.t == gateWayEvents.GuildCreate) this.guildCreate(response.guild);
+                    else if (response.t == gateWayEvents.GuildDelete) this.guildDelete(response.guild);
+                    else if (response.t == gateWayEvents.GuildMemberAdd) this.guildMemberAdd(response.member);
+                    else console.log(response.t);
+                } else {
+                    console.log(response.t);
+                }
+            });
+
+            this.ws.on('close', (code, desc) => {
+                console.log(`CONNECTION CLOSED WITH CODE ${code}\nREASON:\n ${desc}`);
+                exit(1);
+            });
+
+            this.ws.on('error', (err) => {
+                reject(err);
+            });
+
+            this.ws.on('error', (err) => { reject(err); });
         });
     }
 }
 
 
 //All client properties will be re-routed through this export
-module.exports = { Client, gateWayIntents }
+export {gateWayIntents} from '../gateway/intents.js';

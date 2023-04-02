@@ -1,10 +1,10 @@
-const axios = require('axios');
-const author = require('../messages/author.js');
-const { Channel, message } = require('../messages/message.js');
-const Embed = require('../messages/embed.js');
+import axios from 'axios';
+import author from '../messages/author.js';
+import { Channel, message } from '../messages/message.js';
+import {Embed} from '../messages/embed.js';
 
 
-class Interaction {
+export class Interaction {
     /** @type {author} */
     user;
 
@@ -178,6 +178,3 @@ class Interaction {
         }
     }
 }
-
-
-module.exports = Interaction;

@@ -1,7 +1,7 @@
 //Blatantly stolen from https://github.com/discordjs/discord-api-types/blob/main/gateway/v10.ts
 
 
-module.exports = Object.freeze({
+export const messageChannelTypes = Object.freeze({
     /**
      * A text channel within a guild
      */

@@ -1,11 +1,11 @@
-const Colors = require('./colors.js');
+import Colors from './colors.js';
 
 /**
  * Resolves a ColorResolvable into a color number.
  * @param {String} color Color to resolve
  * @returns {Number} A color
  */
-function resolveColor(color) {
+export default function resolveColor(color) {
 	if (typeof color === 'string') {
 		if (color === 'Random') return Math.floor(Math.random() * (0xffffff + 1));
 		if (color === 'Default') return 0;
@@ -19,6 +19,3 @@ function resolveColor(color) {
 
 	return color;
 }
-
-
-module.exports = resolveColor;

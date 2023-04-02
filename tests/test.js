@@ -1,6 +1,6 @@
-const { Client, gateWayIntents, message, Interaction } = require('../structures/types');
-const { bottoken } = require('../config.json');
-
+import { Client, gateWayIntents, message, Interaction } from '../structures/types.js';
+import config from '../config.json' assert { type: 'json' };
+const { bottoken } = config;
 
 var c = new Client({
     intents: [
@@ -23,17 +23,17 @@ c.login(bottoken);
 
 
 c.on('messageRecieved', /**@param {message} message*/ async (message) => {
-    require('./messageTests.js')(message);
+    (await import('./messageTests.js')).default(message);
 });
 
 
 c.on('interactionRecieved', /** @param {Interaction} interaction*/ async (interaction) => {
-    require('./interactionTests.js')(interaction);
+    (await import('./interactionTests.js')).default(interaction);
 });
 
 
 c.on('guildCreate', async (guild) => {
-    require('./guildTests.js')(c);
+    (await import('./guildTests.js')).default(c);
 });
 
 
