@@ -2,14 +2,17 @@ import axios from 'axios';
 import member from './member.js';
 import {guildRole, guildRoleManager, guildMemberRoleManager} from './guildRoles.js';
 import GuildEmoji from './guildEmoji.js';
-import {Channel} from '../messages/message.js';
 import guildInvite from './guildInvite.js';
+import { guildSticker, guildStickerManager } from './GuildStickers.js';
+import { GuildChannelManager } from './GuildChannelManager.js';
+import { Channel } from '../messages/message.js';
 
 //See https://discord.com/developers/docs/resources/guild
 
 export default class Guild {
     #token;
 
+    //#region Vars
     /** @type {String[]} */
     embeded_activities;
 
@@ -58,7 +61,7 @@ export default class Guild {
     /** @type {String} */
     owner_id;
 
-    /** @type {Map<String, Channel>} */
+    /** @type {GuildChannelManager} */
     channels;
 
     /** @type {String} */
@@ -95,7 +98,63 @@ export default class Guild {
     public_updates_channel_id;
 
     /** @type {Object[]} */
-    stage_instances
+    stage_instances;
+
+    /** @type {String} */
+    afk_channel_id;
+
+    /** @type {Number} */
+    afk_timeout;
+
+    /** @type {Number} */
+    verification_level;
+
+    /** @type {Number} */
+    default_message_notifications;
+
+    /** @type {Number} */
+    explicit_content_filter;
+
+    /** @type {String} */
+    system_channel_id;
+
+    /** @type {Number} */
+    system_channel_flags;
+
+    /** @type {String} */
+    rules_channel_id;
+
+    /** @type {Number} */
+    max_presences;
+
+    /** @type {Number} */
+    max_members;
+
+    /** @type {String} */
+    vanity_url_code;
+
+    /** @type {Number} */
+    premium_tier;
+
+    /** @type {Number} */
+    premium_subscription_count;
+
+    /** @type {String} */
+    preferred_locale;
+
+    /** @type {String} */
+    public_updates_channel_id;
+
+    /** @type {Number} */
+    max_video_channel_users;
+
+    //Welcome screen
+    //see https://discord.com/developers/docs/resources/guild#welcome-screen-object
+
+    /** @type {guildStickerManager} */
+    stickers;
+
+    //#endregion
 
     
     async #getChannels(token) {
@@ -107,10 +166,13 @@ export default class Guild {
 
         const response = await axios.get(`https://discord.com/api/guilds/${this.id}/channels`, config);
         
+        const m = new Map();
         for (const channel of response.data) {
             if (channel.type == 4) continue;
-            this.channels.set(channel.id, new Channel(token, channel, this));
+            m.set(channel.id, new Channel(channel, this, token));
         }
+
+        this.channels = new GuildChannelManager(token, this, m);
     }
 
 
@@ -170,6 +232,9 @@ export default class Guild {
                 }
                 this.roles = new guildRoleManager(temp, false, token);
                 this.roles.guild = this;
+            }
+            else if (field == 'stickers') {
+                this.stickers = new guildStickerManager(this, o[field], token);
             }
             else {
                 this[field] = o[field];

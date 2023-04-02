@@ -1,7 +1,8 @@
 import axios from 'axios';
-import author from '../messages/author.js';
+import author from '../messages/User.js';
 import { Channel, message } from '../messages/message.js';
 import {Embed} from '../messages/embed.js';
+import Guild from '../guilds/Guild.js';
 
 
 export class Interaction {
@@ -28,6 +29,12 @@ export class Interaction {
     
     /** @type {String} */
     application_id;
+
+    /** @type {Guild} */
+    guild;
+
+    /** @type {String} */
+    guild_id;
 
 
     /**
@@ -166,10 +173,9 @@ export class Interaction {
         for (const k in this) {
             if (intRaw[k] != undefined) {
                 if (k == "user")  this[k] = new author(intRaw[k]);
-
                 else {
                     if (k == 'channel_id') {
-                        this.channel = new Channel(this.#application.token, intRaw[k]);
+                        this.channel = new Channel(intRaw[k], this.guild, this.#application.token);
                     }
 
                     this[k] = intRaw[k];

@@ -1,4 +1,4 @@
-import author from './author.js';
+import author from './User.js';
 import axios from 'axios';
 
 
@@ -56,7 +56,7 @@ export class Channel {
     }
 
 
-    constructor(token, channel, guild) {
+    constructor(channel, guild, token = null) {
         this.#token = token;
         for (const k in this) {
             if (channel[k]) this[k] = channel[k];
@@ -94,6 +94,17 @@ export class Channel {
 
             resolve(new message(response.data, this.#token));
         });
+    }
+
+    toObj() {
+        var obj = {};
+        for (const key in this) {
+            if (key != '#token' && key != 'guild') {
+                obj[key] = this[key];
+            }
+        }
+
+        return obj;
     }
 }
 
@@ -221,6 +232,7 @@ export class message {
      */
     constructor(msgRaw, token, guild) {
         this.#token = token;
+        this.guild = guild;
 
         for (const k in this) {
             if (msgRaw[k] != undefined) {
@@ -232,7 +244,7 @@ export class message {
                 }
                 else {
                     if (k == 'channel_id') {
-                        this.channel = new Channel(this.#token, {id: msgRaw[k]}, null);
+                        this.channel = new Channel({id: msgRaw[k]}, this.guild, this.#token);
                     }
 
                     this[k] = msgRaw[k];

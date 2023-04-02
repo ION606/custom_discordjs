@@ -7,6 +7,7 @@ import { EventEmitter } from 'events';
 import axios from 'axios';
 import { exit } from 'process';
 import Guild from '../guilds/Guild.js';
+import user from '../messages/User.js';
 
 
 
@@ -158,7 +159,12 @@ export class Client extends EventEmitter {
                         }
                     }
                     else if (response.t == gateWayEvents.InteractionCreate) {
-                        if (data["d"]["user"]["id"] != this.user_profile.id) {
+                        if (data["d"]["member"] && data["d"]["member"]["id"] != this.user_profile.id) {
+                            response.interaction.guild = this.guilds.get(response.interaction.guild_id);
+                            response.interaction.user = new user(data["d"]["member"]["user"]);
+                            this.interactionRecieved(response.interaction);
+                        }
+                        else if (data["d"]["user"]["id"] != this.user_profile.id) {
                             this.interactionRecieved(response.interaction);
                         }
                     }

@@ -1,4 +1,4 @@
-export default class msgAuthor {
+export default class user {
     /** @type {String} */
     id;
 
