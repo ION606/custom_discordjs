@@ -3,6 +3,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 /** @param {Interaction} interaction */
 export default async (interaction) => {
+    console.log(interaction.data);
     interaction.reply({content: "HELLO WORLD", ephemeral: true});
     await delay(3000);
     interaction.update({content: "NOOOOOOOOOOOOOOOOOO"});

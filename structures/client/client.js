@@ -149,7 +149,7 @@ export class Client extends EventEmitter {
                         this.user_profile = response.profile;
                         this.user_settings = response.config;
                         this.id = response.profile.id;
-                        console.log(response.guilds);
+                        // console.log(response.guilds);
                         this.ready();
                     }
                     else if (response.t == gateWayEvents.MessageCreate) {
@@ -171,9 +171,10 @@ export class Client extends EventEmitter {
                     else if (response.t == gateWayEvents.GuildCreate) this.guildCreate(response.guild);
                     else if (response.t == gateWayEvents.GuildDelete) this.guildDelete(response.guild);
                     else if (response.t == gateWayEvents.GuildMemberAdd) this.guildMemberAdd(response.member);
-                    else console.log(response.t);
+                    // else console.log(response.t);
                 } else {
-                    console.log(response.t);
+                    // commmented to avoid heartbeats
+                    // console.log(response.t);
                 }
             });
 

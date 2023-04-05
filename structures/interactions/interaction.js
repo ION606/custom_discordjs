@@ -1,9 +1,29 @@
 import axios from 'axios';
 import author from '../messages/User.js';
-import { Channel, message } from '../messages/message.js';
+import { message } from '../messages/message.js';
+import { Channel } from '../guilds/Channel.js';
 import {Embed} from '../messages/embed.js';
 import Guild from '../guilds/Guild.js';
 
+class interactionOptions {
+    /** @type {String} */
+    name;
+
+    /** @type {Number} */
+    type;
+
+    /** @type {[{value: any, type: Number, name: String}]} */
+    options;
+
+    /** @type {Boolean} */
+    focused;
+
+    constructor(o) {
+        for (const k in this) {
+            if (o[k]) this[k] = o[k];
+        }
+    }
+}
 
 export class Interaction {
     /** @type {author} */
@@ -35,6 +55,9 @@ export class Interaction {
 
     /** @type {String} */
     guild_id;
+
+    /** @type {interactionOptions} */
+    data;
 
 
     /**
@@ -173,7 +196,9 @@ export class Interaction {
         for (const k in this) {
             if (intRaw[k] != undefined) {
                 if (k == "user")  this[k] = new author(intRaw[k]);
-                else {
+                else if (k == 'data') {
+                    this.data = new interactionOptions(intRaw[k]);
+                } else {
                     if (k == 'channel_id') {
                         this.channel = new Channel(intRaw[k], this.guild, this.#application.token);
                     }

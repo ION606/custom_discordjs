@@ -1,6 +1,5 @@
 import Guild from "../structures/guilds/Guild.js";
 import { guildRole, newGuildRoleObj } from "../structures/guilds/guildRoles.js";
-import { Channel } from "../structures/messages/message.js";
 import { Client } from "../structures/types.js";
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -43,4 +42,9 @@ export default async function temp(c)  {
     }
 
     const newChannel = await guild.channels.create({name: "temptemp"});
+    await delay(1000);
+    
+    guild.channels.edit(newChannel.id, {name: "NEW-NAME!"});
+    // const delConf = await guild.channels.delete(newChannel.id);
+    // console.log(delConf);
 }

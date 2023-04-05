@@ -10,15 +10,19 @@ export default async (message) => {
         .setDescription("dkjhfslkjdfhjldsjhfkzdjhflkdsjhfdsjhfkdsjf");
         
         const response = await message.channel.send({ content: "FDJHKSJDFHLKJDSHFLKJSDHFKDSJHFD", embeds: [embd] });
-        console.log(response);
+        // console.log(response);
         await delay(2000);
 
         const response2 = await message.reply({content: `You said "${message.content}"!`, embeds: [embd]});
-        console.log(response2);
+        // console.log(response2);
         await delay(2000);
 
         const response3 = await response.edit("KAT");
-        console.log(response3);
+        // console.log(response3);
+
+        //Get channel messages
+        const messages = await response.channel.getMessages();
+        console.log(messages);
     } else {
         console.log(message);
     }

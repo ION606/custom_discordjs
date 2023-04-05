@@ -5,7 +5,7 @@ import GuildEmoji from './guildEmoji.js';
 import guildInvite from './guildInvite.js';
 import { guildSticker, guildStickerManager } from './GuildStickers.js';
 import { GuildChannelManager } from './GuildChannelManager.js';
-import { Channel } from '../messages/message.js';
+import { Channel } from './Channel.js';
 
 //See https://discord.com/developers/docs/resources/guild
 
