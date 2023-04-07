@@ -1,7 +1,8 @@
 import axios from 'axios';
 import {message} from '../messages/message.js';
+import { BaseStruct } from '../baseStruct.js';
 
-export class Channel {
+export class Channel extends BaseStruct {
     /** @type {String} */
     id;
 
@@ -56,6 +57,8 @@ export class Channel {
 
 
     constructor(channel, guild, token = null) {
+        super();
+        
         this.#token = token;
         for (const k in this) {
             if (channel[k]) this[k] = channel[k];

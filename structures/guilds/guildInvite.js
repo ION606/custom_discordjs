@@ -2,9 +2,10 @@ import author from '../messages/User.js';
 import Guild from './Guild.js'
 import { Channel } from './Channel.js';
 import axios from 'axios';
+import { BaseStruct } from '../baseStruct.js';
 
 
-export default class invite {
+export default class invite extends BaseStruct {
     #token;
 
     code;
@@ -49,6 +50,8 @@ export default class invite {
     }
 
     constructor(o, guild, token) {
+        super();
+        
         this.#token = token;
         for (const k in this) {
             if (o[k]) {

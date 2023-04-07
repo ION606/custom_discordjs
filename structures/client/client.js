@@ -8,6 +8,7 @@ import axios from 'axios';
 import { exit } from 'process';
 import Guild from '../guilds/Guild.js';
 import user from '../messages/User.js';
+import { Thread } from '../guilds/ThreadManager.js';
 
 
 
@@ -39,6 +40,8 @@ export class Client extends EventEmitter {
     /** @type {Map<String, Guild>} */
     guilds;
 
+    /** @type {import('axios').AxiosInstance} */
+    axiosCustom;
 
     /**
      * @param {opts} input 
@@ -74,16 +77,24 @@ export class Client extends EventEmitter {
         this.emit("messageRecieved", msg);
     }
 
-    ready() {
+    ready(response) {
+        this.user_profile = response.profile;
+        this.user_settings = response.config;
+        this.id = response.profile.id;
         this.emit('ready');
     }
 
-    customError(err) {
-        this.emit('error', err);
-    }
+    customError(err) { this.emit('error', err); }
 
-    interactionRecieved(interaction) {
-        this.emit('interactionRecieved', interaction);
+    interactionRecieved(data, response) {
+        if (data["d"]["member"] && data["d"]["member"]["id"] != this.user_profile.id) {
+            response.interaction.guild = this.guilds.get(response.interaction.guild_id);
+            response.interaction.user = new user(data["d"]["member"]["user"]);
+            this.emit('interactionRecieved', response.interaction);
+        }
+        else if (data["d"]["user"]["id"] != this.user_profile.id) {
+            this.emit('interactionRecieved', response.interaction);
+        }
     }
 
     /**
@@ -103,6 +114,30 @@ export class Client extends EventEmitter {
     guildMemberAdd(member) {
         this.emit('guildMemberAdd', member);
     }
+
+
+    threadCreate(threadRaw) {
+        const guild = this.guilds.get(threadRaw.guild_id);
+        const newThread = new Thread(threadRaw, guild, this.#token);
+        guild.threads.cache.set(newThread.id, newThread);
+    }
+
+    threadEdit(threadRaw) {
+        if (!this.guilds.has(threadRaw.guild_id)) return;
+        const guild = this.guilds.get(threadRaw.guild_id);
+
+        if (!guild.threads.cache.has(threadRaw.id)) return;
+        console.log(threadRaw);
+    }
+
+    ThreadDelete(threadRaw) {
+        if (!this.guilds.has(threadRaw.guild_id)) return;
+        const guild = this.guilds.get(threadRaw.guild_id);
+
+        if (!guild.threads.cache.has(threadRaw.id)) return;
+        guild.threads.cache.delete()
+    }
+
     //#endregion
 
 
@@ -111,6 +146,10 @@ export class Client extends EventEmitter {
      */
     async login(token, isUser = false) {
         if (!isUser) token = "Bot " + token;
+        this.axiosCustom = axios.create({
+            baseURL: "https://discord.com/api/",
+            headers: { Authorization: this.#token }
+        });
         
         return new Promise((resolve, reject) => {
             this.ws = new WebSocket("wss://gateway.discord.gg/?v=10&encoding=json");
@@ -143,35 +182,43 @@ export class Client extends EventEmitter {
                 const data = JSON.parse(msg.toString());
                 const response = await handleResponses(data, token, this.id);
 
-                if (response.op == 10) { this.#startHeartBeat(response.heartBeat, token); }
+                if (response.op == 10) { return this.#startHeartBeat(response.heartBeat, token); }
+
                 else if (response.op == 0) {
-                    if (response.t == gateWayEvents.Ready) {
-                        this.user_profile = response.profile;
-                        this.user_settings = response.config;
-                        this.id = response.profile.id;
-                        // console.log(response.guilds);
-                        this.ready();
+                    switch(response.t) {
+                        case gateWayEvents.Ready: this.ready(response);
+                        break;
+
+                        case gateWayEvents.MessageCreate:
+                            if (data["d"]["author"]["id"] != this.user_profile.id){
+                                response.message.guild = this.guilds.get(response.message.guild_id);
+                                this.messageRecieved(response.message);
+                            }
+                        break;
+
+                        case gateWayEvents.InteractionCreate: this.interactionRecieved(data, response);
+                        break;
+
+                        case gateWayEvents.GuildCreate: this.guildCreate(response.guild);
+                        break;
+
+                        case gateWayEvents.GuildDelete: this.guildDelete(response.guild);
+                        break;
+
+                        case gateWayEvents.GuildMemberAdd: this.guildMemberAdd(response.member);
+                        break;
+
+                        case gateWayEvents.ThreadCreate: this.threadCreate(response.threadRaw);
+                        break;
+
+                        case gateWayEvents.ThreadUpdate: this.threadEdit(response.threadRaw);
+                        break;
+
+                        case gateWayEvents.ThreadDelete: this.ThreadDelete(response.threadRaw);
+                        break;
+
+                        default: // console.log(response.t);
                     }
-                    else if (response.t == gateWayEvents.MessageCreate) {
-                        if (data["d"]["author"]["id"] != this.user_profile.id){
-                            response.message.guild = this.guilds.get(response.message.guild_id);
-                            this.messageRecieved(response.message);
-                        }
-                    }
-                    else if (response.t == gateWayEvents.InteractionCreate) {
-                        if (data["d"]["member"] && data["d"]["member"]["id"] != this.user_profile.id) {
-                            response.interaction.guild = this.guilds.get(response.interaction.guild_id);
-                            response.interaction.user = new user(data["d"]["member"]["user"]);
-                            this.interactionRecieved(response.interaction);
-                        }
-                        else if (data["d"]["user"]["id"] != this.user_profile.id) {
-                            this.interactionRecieved(response.interaction);
-                        }
-                    }
-                    else if (response.t == gateWayEvents.GuildCreate) this.guildCreate(response.guild);
-                    else if (response.t == gateWayEvents.GuildDelete) this.guildDelete(response.guild);
-                    else if (response.t == gateWayEvents.GuildMemberAdd) this.guildMemberAdd(response.member);
-                    // else console.log(response.t);
                 } else {
                     // commmented to avoid heartbeats
                     // console.log(response.t);

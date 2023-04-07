@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { Channel } from './Channel.js';
 import Guild from './Guild.js';
+import { BaseStruct } from '../baseStruct.js';
 
-export class GuildChannelManager {
+
+export class GuildChannelManager extends BaseStruct {
     #token;
 
     /** @type {Guild} */
@@ -91,8 +93,9 @@ export class GuildChannelManager {
         });
     }
 
-
     constructor(token, guild, newCache) {
+        super();
+        
         this.#token = token;
         this.guild = guild;
         this.cache = newCache;

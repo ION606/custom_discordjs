@@ -1,6 +1,7 @@
 import author from './User.js';
 import axios from 'axios';
 import { Channel } from '../guilds/Channel.js';
+import Guild from '../guilds/Guild.js';
 
 
 export class message {

@@ -22,8 +22,9 @@ export default async (message) => {
 
         //Get channel messages
         const messages = await response.channel.getMessages();
-        console.log(messages);
+        // console.log(messages);
     } else {
-        console.log(message);
+        // console.log(message);
+        console.log(`Guild message recieved from "${message.guild.name}"`);
     }
 }

@@ -6,10 +6,12 @@ import guildInvite from './guildInvite.js';
 import { guildSticker, guildStickerManager } from './GuildStickers.js';
 import { GuildChannelManager } from './GuildChannelManager.js';
 import { Channel } from './Channel.js';
+import { ThreadManager } from './ThreadManager.js';
+import { BaseStruct } from '../baseStruct.js';
 
 //See https://discord.com/developers/docs/resources/guild
 
-export default class Guild {
+export default class Guild extends BaseStruct {
     #token;
 
     //#region Vars
@@ -79,8 +81,8 @@ export default class Guild {
     /** @type {Number} */
     mfa_level;
 
-    // /** @type {String} */    //FIXME
-    // threads;
+    /** @type {ThreadManager} */
+    threads;
 
     /** @type {Number} */
     system_channel_flags;
@@ -217,6 +219,7 @@ export default class Guild {
      * @param {String} token 
      */
     constructor(o, token) {
+        super();
         this.members = new Map();
         this.channels = new Map();
         this.stickers = [];
@@ -235,6 +238,9 @@ export default class Guild {
             }
             else if (field == 'stickers') {
                 this.stickers = new guildStickerManager(this, o[field], token);
+            }
+            else if (field == 'threads') {
+                this.threads = new ThreadManager(o[field], this, token);
             }
             else {
                 this[field] = o[field];

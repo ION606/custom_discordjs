@@ -41,10 +41,16 @@ export default async function temp(c)  {
         }
     }
 
-    const newChannel = await guild.channels.create({name: "temptemp"});
-    await delay(1000);
     
-    guild.channels.edit(newChannel.id, {name: "NEW-NAME!"});
+    // const newChannel = await guild.channels.create({name: "temptemp"});
+    // await delay(1000);
+    // guild.channels.cache.forEach((channel) => {
+    //     if (channel.name == "new-name") {
+    //         guild.channels.delete(channel.id);
+    //     }
+    // })
+    
+    // guild.channels.edit(newChannel.id, {name: "NEW-NAME!"});
     // const delConf = await guild.channels.delete(newChannel.id);
     // console.log(delConf);
 }

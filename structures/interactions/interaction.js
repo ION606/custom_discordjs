@@ -4,8 +4,10 @@ import { message } from '../messages/message.js';
 import { Channel } from '../guilds/Channel.js';
 import {Embed} from '../messages/embed.js';
 import Guild from '../guilds/Guild.js';
+import { BaseStruct } from '../baseStruct.js';
 
-class interactionOptions {
+
+class interactionOptions extends BaseStruct {
     /** @type {String} */
     name;
 
@@ -25,7 +27,7 @@ class interactionOptions {
     }
 }
 
-export class Interaction {
+export class Interaction extends BaseStruct {
     /** @type {author} */
     user;
 

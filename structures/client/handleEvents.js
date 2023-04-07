@@ -15,25 +15,39 @@ export default async function handleEvents(msgObj, token, id) {
         const t = msgObj["t"];
 
         if (op == 10) return resolve({op: op, heartBeat: msgObj["d"]["heartbeat_interval"]});
+        else if (op != 0) { return resolve(false); } // https://discord.com/developers/docs/topics/opcodes-and-status-codes#gateway-gateway-opcodes
 
-        else if (op != 0) { resolve(false); }
+        switch(t) {
+            case gateWayEvents.Ready:
+                resolve({op: op, t: t, config: msgObj["d"]["user_settings"], profile: msgObj["d"]["user"]}); //, guilds: msgObj["d"]["guilds"]
+                break;
 
-        else if (t == gateWayEvents.Ready) {
-            resolve({op: op, t: t, config: msgObj["d"]["user_settings"], profile: msgObj["d"]["user"]}); //, guilds: msgObj["d"]["guilds"]
-        }
-        else if (t == gateWayEvents.MessageCreate) {
-            const msg = new message(msgObj["d"], token);
-            resolve({op: op, t: t, message: msg});
-        }
-        else if (t == gateWayEvents.InteractionCreate) {
-            resolve({op: op, t: t, interaction: new Interaction(msgObj["d"], token, id)});
-        }
-        else if (t == gateWayEvents.GuildCreate) {
-            resolve({op: op, t: t, guild: new Guild(msgObj["d"], token)});
-        }
-        
-        else {
-            // console.log(t);
+            case gateWayEvents.MessageCreate:
+                const msg = new message(msgObj["d"], token);
+                resolve({op: op, t: t, message: msg});
+                break;
+
+            case gateWayEvents.InteractionCreate:
+                resolve({op: op, t: t, interaction: new Interaction(msgObj["d"], token, id)});
+                break;
+
+            case gateWayEvents.GuildCreate:
+                resolve({op: op, t: t, guild: new Guild(msgObj["d"], token)});
+                break;
+
+            case gateWayEvents.ThreadCreate:
+                resolve({op: op, t: t, threadRaw: msgObj["d"]});
+                break;
+            
+            case gateWayEvents.ThreadDelete:
+                resolve({op: op, t: t, threadRaw: msgObj["d"]});
+                break;
+
+            case gateWayEvents.ThreadUpdate:
+                resolve({op: op, t: t, threadRaw: msgObj["d"]});
+                break;
+
+            default: console.log(t);
         }
     });
 }

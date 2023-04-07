@@ -1,8 +1,10 @@
 import axios from "axios";
 import user from "../messages/User.js";
 import Guild from "./Guild.js";
+import { BaseStruct } from "../baseStruct.js";
 
-export class guildSticker {
+
+export class guildSticker extends BaseStruct {
     #token;
     
     /** @type {String} */

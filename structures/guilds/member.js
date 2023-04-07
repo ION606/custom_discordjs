@@ -1,9 +1,10 @@
 import axios from 'axios';
 import {guildRole, guildMemberRoleManager} from "./guildRoles.js";
+import { BaseStruct } from '../baseStruct.js';
 // https://discord.com/developers/docs/resources/guild#modify-guild-member
 
 
-export default class member {
+export default class member extends BaseStruct {
     /** @type {Object} */
     user;
 
@@ -38,6 +39,8 @@ export default class member {
     avatar;
 
     constructor(o, roles) {
+        super();
+        
         this.roles = roles;
         for (const k in this) {
             if (o[k] && k != 'roles') {
