@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Channel } from "./Channel.js";
+import { BaseStruct } from "../baseStruct.js";
 
 export class Thread extends Channel {
     /** @type {Number} */
@@ -12,8 +13,8 @@ export class Thread extends Channel {
     message_count;
 
 
-    constructor(o, guild, token) {
-        super(o, guild, token);
+    constructor(o, guild, client) {
+        super(o, guild, client);
         this.last_message_sent = o['total_message_sent'];
         this.thread_metadata = o['thread_metadata'];
         this.message_count = o['thread_metadata'];
@@ -21,8 +22,7 @@ export class Thread extends Channel {
 }
 
 
-export class ThreadManager {
-    #token;
+export class ThreadManager extends BaseStruct {
     /** @type {Map<String, Thread>} */
     cache;
 
@@ -49,14 +49,8 @@ async delete(thread, reason=null) {
     return new Promise(async (resolve) => {
         try {
             if (!this.cache.has(thread.id)) throw "This thread does not exist!";
-
-            const config = {
-                headers: {
-                    Authorization: this.#token
-                }
-            }
     
-            await axios.delete(`https://discord.com/api/channels/${thread.id}`, config);
+            await this.client.axiosCustom.delete(`/channels/${thread.id}`);
             const newChannel = this.cache.get(thread.id);
             this.cache.delete(thread.id);
             resolve(newChannel);
@@ -68,12 +62,12 @@ async delete(thread, reason=null) {
 
 
 
-    constructor(o, guild, token) {
+    constructor(o, guild, client) {
+        super(client);
         this.cache = new Map();
-        this.#token = token;
 
         for (const k of o) {
-            const newThread = new Thread(k, guild, token);
+            const newThread = new Thread(k, guild, client);
             this.cache.set(newThread.id, newThread);
         }
     }

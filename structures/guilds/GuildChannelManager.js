@@ -5,8 +5,6 @@ import { BaseStruct } from '../baseStruct.js';
 
 
 export class GuildChannelManager extends BaseStruct {
-    #token;
-
     /** @type {Guild} */
     guild;
 
@@ -21,15 +19,9 @@ export class GuildChannelManager extends BaseStruct {
         return new Promise(async (resolve) => {
             try {
                 if (!channel.name) throw "Please provide a channel name";
-
-                const config = {
-                    headers: {
-                        Authorization: this.#token
-                    }
-                }
         
-                const response = await axios.post(`https://discord.com/api/guilds/${this.guild.id}/channels`, channel, config);
-                const newChannel = new Channel(response.data, this.guild, this.#token);
+                const response = await this.client.axiosCustom.post(`/guilds/${this.guild.id}/channels`, channel);
+                const newChannel = new Channel(response.data, this.guild, this.client);
                 this.cache.set(newChannel.id, newChannel);
                 resolve(newChannel);
             } catch (err) {
@@ -50,14 +42,8 @@ export class GuildChannelManager extends BaseStruct {
             try {
                 if (!this.cache.has(cid)) throw "This channel does not exist!";
 
-                const config = {
-                    headers: {
-                        Authorization: this.#token
-                    }
-                }
-        
-                const response = await axios.delete(`https://discord.com/api/channels/${cid}`, config);
-                const newChannel = new Channel(response.data, this.guild, this.#token);
+                const response = await this.client.axiosCustom.delete(`/channels/${cid}`);
+                const newChannel = new Channel(response.data, this.guild, this.client);
                 this.cache.delete(cid);
                 resolve(newChannel);
             } catch (err) {
@@ -76,15 +62,9 @@ export class GuildChannelManager extends BaseStruct {
             try {
                 if (!this.cache.has(cid)) throw "This channel does not exist!";
                 if (Object.keys(opts).length == 0) return resolve(this);
-                
-                const config = {
-                    headers: {
-                        Authorization: this.#token
-                    }
-                }
         
-                const response = await axios.patch(`https://discord.com/api/channels/${cid}`, opts, config);
-                const newChannel = new Channel(response.data, this.guild, this.#token);
+                const response = await this.client.axiosCustom.patch(`/channels/${cid}`, opts);
+                const newChannel = new Channel(response.data, this.guild, this.client);
                 this.cache.set(newChannel.id, newChannel);
                 resolve(newChannel);
             } catch (err) {
@@ -93,10 +73,9 @@ export class GuildChannelManager extends BaseStruct {
         });
     }
 
-    constructor(token, guild, newCache) {
-        super();
+    constructor(client, guild, newCache) {
+        super(client);
         
-        this.#token = token;
         this.guild = guild;
         this.cache = newCache;
     }

@@ -7,7 +7,7 @@ import Guild from '../guilds/Guild.js';
 import { BaseStruct } from '../baseStruct.js';
 
 
-class interactionOptions extends BaseStruct {
+class interactionOptions {
     /** @type {String} */
     name;
 
@@ -36,9 +36,6 @@ export class Interaction extends BaseStruct {
 
     /** @type {String} */
     #token;
-
-    /** @type {{token: String, id: String}} */
-    #application;
 
     /** @type {String} */
     id;
@@ -70,12 +67,6 @@ export class Interaction extends BaseStruct {
         return new Promise(async (resolve, reject) => {
             const toSend = (typeof inp == 'string') ? inp : inp.content;
 
-        const config = {
-                headers: {
-                    Authorization: this.#application.token
-                }
-            }
-
             var embds = undefined;
             if (inp.embeds) {
                 embds = [];
@@ -84,16 +75,16 @@ export class Interaction extends BaseStruct {
                 }
             }
 
-            const response = await axios.post(`https://discord.com/api/interactions/${this.id}/${this.#token}/callback`, {
+            const response = await this.client.axiosCustom.post(`/interactions/${this.id}/${this.#token}/callback`, {
                 type: 4,
                 data: {
                     content: toSend,
                     embeds: embds,
                     flags: (inp.ephemeral) ? (1 << 6) : undefined
                 }
-            }, config);
+            });
 
-            resolve(new message(response.data, this.#application.token));
+            resolve(new message(response.data, this.client));
         });
     }
 
@@ -103,12 +94,6 @@ export class Interaction extends BaseStruct {
             try {
                 const toSend = (typeof inp == 'string') ? inp : inp.content;
 
-                const config = {
-                    headers: {
-                        Authorization: this.#application.token
-                    }
-                }
-
                 var embds = undefined;
                 if (inp.embeds) {
                     embds = [];
@@ -117,15 +102,15 @@ export class Interaction extends BaseStruct {
                     }
                 }
 
-                const response = await axios.patch(`https://discord.com/api/webhooks/${this.#application.id}/${this.#token}/messages/@original`, {
+                const response = await this.client.axiosCustom.patch(`/webhooks/${this.client.id}/${this.#token}/messages/@original`, {
                     content: toSend,
                     embeds: embds,
                     flags: (inp.ephemeral) ? (1 << 6) : undefined
-                }, config);
+                });
 
                 // const response = await axios.get(`https://discord.com/api/webhooks/${this.#application.id}/${this.#token}/messages/@original`, config);
 
-                resolve(new message(response.data, this.#application.token));
+                resolve(new message(response.data, this.client));
             } catch(err) {
                 reject(err);
             }
@@ -142,12 +127,6 @@ export class Interaction extends BaseStruct {
             try {
                 const toSend = (typeof inp == 'string') ? inp : inp.content;
 
-                const config = {
-                    headers: {
-                        Authorization: this.#application.token
-                    }
-                }
-
                 var embds = undefined;
                 if (inp.embeds) {
                     embds = [];
@@ -156,15 +135,15 @@ export class Interaction extends BaseStruct {
                     }
                 }
 
-                const response = await axios.post(`https://discord.com/api/webhooks/${this.#application.id}/${this.#token}`, {
+                const response = await this.client.axiosCustom.post(`/webhooks/${this.client.id}/${this.#token}`, {
                     content: toSend,
                     embeds: embds,
                     flags: (inp.ephemeral) ? (1 << 6) : undefined
-                }, config);
+                });
 
                 // const response = await axios.get(`https://discord.com/api/webhooks/${this.#application.id}/${this.#token}/messages/@original`, config);
 
-                resolve(new message(response.data, this.#application.token));
+                resolve(new message(response.data, this.client));
             } catch(err) {
                 reject(err);
             }
@@ -178,7 +157,7 @@ export class Interaction extends BaseStruct {
     async delete() {
         return new Promise(async (resolve, reject) => {
             try {
-                const response = await axios.delete(`https://discord.com/api/webhooks/${this.#application.id}/${this.#token}/messages/@original`);
+                const response = await this.client.axiosCustom.delete(`/webhooks/${this.client.id}/${this.#token}/messages/@original`);
                 
                 resolve(response.status == 204);
             } catch (err) {
@@ -191,8 +170,9 @@ export class Interaction extends BaseStruct {
     /**
      * @param {Object} intRaw
      */
-    constructor(intRaw, token, apid) {
-        this.#application = {token: token, id: apid};
+    constructor(intRaw, client) {
+        super(client);
+
         this.#token = intRaw["token"];
 
         for (const k in this) {
@@ -202,7 +182,7 @@ export class Interaction extends BaseStruct {
                     this.data = new interactionOptions(intRaw[k]);
                 } else {
                     if (k == 'channel_id') {
-                        this.channel = new Channel(intRaw[k], this.guild, this.#application.token);
+                        this.channel = new Channel(intRaw[k], this.guild, client);
                     }
 
                     this[k] = intRaw[k];

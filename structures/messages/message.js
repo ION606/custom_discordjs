@@ -2,9 +2,10 @@ import author from './User.js';
 import axios from 'axios';
 import { Channel } from '../guilds/Channel.js';
 import Guild from '../guilds/Guild.js';
+import { BaseStruct } from '../baseStruct.js';
 
 
-export class message {
+export class message extends BaseStruct {
     /** @type {author} */
     author;
 
@@ -56,9 +57,6 @@ export class message {
     /** @type {Channel} */
     channel;
 
-    /** @type {String} */
-    #token;
-
 
     /**
      * @param {String} content 
@@ -84,12 +82,7 @@ export class message {
     delete() {
         return new Promise(async (resolve, reject) => {
             try {
-                const config = {
-                    headers: {
-                        Authorization: this.#token
-                    }
-                  }
-                const response = await axios.delete(`https://discord.com/api/channels/${this.channel.id}/messages/${this.id}`, config);
+                const response = await this.client.axiosCustom.delete(`/channels/${this.channel.id}/messages/${this.id}`);
         
                 resolve(response.data);
             } catch(err) {
@@ -106,14 +99,8 @@ export class message {
     async edit(inp) {
         return new Promise(async (resolve, reject) => {
             const newMsg = (typeof inp == "string") ? {content: inp} : inp;
-
-            const config = {
-                headers: {
-                    Authorization: this.#token
-                }
-            }
     
-            axios.patch(`https://discord.com/api/channels/${this.channel.id}/messages/${this.id}`, newMsg, config).then((response) => {
+            this.client.axiosCustom.patch(`/channels/${this.channel.id}/messages/${this.id}`, newMsg).then((response) => {
                 resolve(response.data);
             }).catch((err) => {
                 reject(`REQUEST FAILED WITH CODE ${err.response.data.code} AND THE FOLLOWING REASON:\n${err.response.data.message}`);
@@ -125,8 +112,9 @@ export class message {
     /**
      * @param {Object} msgRaw
      */
-    constructor(msgRaw, token, guild) {
-        this.#token = token;
+    constructor(msgRaw, client, guild) {
+        super(client);
+
         this.guild = guild;
 
         for (const k in this) {
@@ -139,7 +127,7 @@ export class message {
                 }
                 else {
                     if (k == 'channel_id') {
-                        this.channel = new Channel({id: msgRaw[k]}, this.guild, this.#token);
+                        this.channel = new Channel({id: msgRaw[k]}, this.guild, client);
                     }
 
                     this[k] = msgRaw[k];

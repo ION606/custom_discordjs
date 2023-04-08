@@ -9,7 +9,7 @@ import Guild from '../guilds/Guild.js';
  * @param {Object} msg
  * @returns {Promise<Boolean>}
  */
-export default async function handleEvents(msgObj, token, id) {
+export default async function handleEvents(msgObj, token, client) {
     return new Promise((resolve, reject) => {
         const op = msgObj["op"];
         const t = msgObj["t"];
@@ -23,16 +23,16 @@ export default async function handleEvents(msgObj, token, id) {
                 break;
 
             case gateWayEvents.MessageCreate:
-                const msg = new message(msgObj["d"], token);
+                const msg = new message(msgObj["d"], client);
                 resolve({op: op, t: t, message: msg});
                 break;
 
             case gateWayEvents.InteractionCreate:
-                resolve({op: op, t: t, interaction: new Interaction(msgObj["d"], token, id)});
+                resolve({op: op, t: t, interaction: new Interaction(msgObj["d"], client)});
                 break;
 
             case gateWayEvents.GuildCreate:
-                resolve({op: op, t: t, guild: new Guild(msgObj["d"], token)});
+                resolve({op: op, t: t, guild: new Guild(msgObj["d"], client)});
                 break;
 
             case gateWayEvents.ThreadCreate:

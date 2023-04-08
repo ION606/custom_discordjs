@@ -4,9 +4,7 @@ import Guild from "./Guild.js";
 import { BaseStruct } from "../baseStruct.js";
 
 
-export class guildSticker extends BaseStruct {
-    #token;
-    
+export class guildSticker extends BaseStruct {    
     /** @type {String} */
     id;
 
@@ -58,44 +56,29 @@ export class guildSticker extends BaseStruct {
      */
     async modify(params) {
         return new Promise(async (resolve) => {
-            const config = {
-                headers: {
-                    Authorization: this.#token
-                }
-            }
-
-            const response = await axios.patch(`https://discord.com/api/guilds/${this.guild.id}/stickers/${this.id}`, params, config);
+            const response = await this.client.axiosCustom.patch(`/guilds/${this.guild.id}/stickers/${this.id}`, params);
             this.#construcorHelper(response.data);
-
             resolve(true);
         });
     }
 
     async delete() {
         return new Promise(async (resolve) => {
-            const config = {
-                headers: {
-                    Authorization: this.#token
-                }
-            }
-
-            await axios.delete(`https://discord.com/api/guilds/${this.guild.id}/stickers/${this.id}`, config);
-
+            await this.client.axiosCustom.delete(`/guilds/${this.guild.id}/stickers/${this.id}`);
             resolve(true);
         });
     }
 
-    constructor(o, guild, token) {
-        this.#token = token;
+    constructor(o, guild, client) {
+        super(client);
+
         this.guild = guild;
         this.#construcorHelper(o);
     }
 }
 
 
-export class guildStickerManager {
-    #token;
-
+export class guildStickerManager extends BaseStruct{
     /** @type {Map<String, guildSticker>} */
     cache;
 
@@ -114,13 +97,8 @@ export class guildStickerManager {
         return new Promise(async (resolve) => {
             if (!sticker.name || !sticker.description || !sticker.tags) return resolve(undefined);
 
-            const config = {
-                headers: {
-                    Authorization: this.#token
-                }
-            }
 
-            const response = await axios.post(`https://discord.com/api/guilds/${this.guild.id}/stickers/${this.id}`, config);
+            const response = await this.client.axiosCustom.post(`https://discord.com/api/guilds/${this.guild.id}/stickers/${this.id}`);
 
             resolve(new guildSticker(response.data));
         });
@@ -129,11 +107,11 @@ export class guildStickerManager {
     /**
      * @param {Guild} guild 
      * @param {Object[]} o 
-     * @param {String} token 
      */
-    constructor(guild, o, token) {
+    constructor(guild, o, client) {
+        super(client);        
         this.guild = guild;
-        this.#token = token;
+
         for (const stickerRaw of o) {
             const sticker = new guildSticker(stickerRaw);
             this.cache.set(sticker.id, sticker);

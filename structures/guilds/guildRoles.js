@@ -100,7 +100,6 @@ export class newGuildRoleObj {
 
 export class guildMemberRoleManager extends BaseStruct {
     #uid;
-    #token;
 
     /** @type {Guild} */
     guild;
@@ -115,16 +114,9 @@ export class guildMemberRoleManager extends BaseStruct {
         return new Promise(async (resolve, reject) => {
             const rid = (typeof role == 'string') ? role : role.id;
             if (!this.cache.has(rid)) throw "USER DOESN'T HAVE THIS ROLE";
-
-            const config = {
-                headers: {
-                    Authorization: this.#token
-                }
-            }
-
             this.cache.delete(rid);
             
-            const response = await axios.delete(`https://discord.com/api/guilds/${this.guild.id}/members/${this.#uid}/roles/${rid}`, config);
+            const response = await this.client.axiosCustom.delete(`/guilds/${this.guild.id}/members/${this.#uid}/roles/${rid}`);
 
             resolve(response);
         });
@@ -141,10 +133,9 @@ export class guildMemberRoleManager extends BaseStruct {
             if (this.cache.has(rid)) throw "USER ALREADY HAS THIS ROLE";
             if (!grole) throw "ROLE NOT FOUND";
 
-            const headers = { Authorization: this.#token }
             this.cache.set(rid, grole);
             
-            const response = await axios.put(`https://discord.com/api/guilds/${this.guild.id}/members/${this.#uid}/roles/${rid}`, {}, { headers });
+            const response = await this.client.axiosCustom.put(`/guilds/${this.guild.id}/members/${this.#uid}/roles/${rid}`, {});
 
             resolve(response);
         });
@@ -161,9 +152,9 @@ export class guildMemberRoleManager extends BaseStruct {
      * @param {Array<guildRole>} roles 
      * @param {String} uid UID or GuildId
      */
-    constructor(roles, uid, token) {
-        super();
-        this.#token = token;
+    constructor(roles, uid, client) {
+        super(client);
+
         this.#uid = uid;
         this.cache = new Map();
         roles.forEach((gr) => this.cache.set(gr.id, gr));
@@ -173,8 +164,7 @@ export class guildMemberRoleManager extends BaseStruct {
 
 export class guildRoleManager extends BaseStruct {
     #uid;
-    #token;
-
+    
     /** @type {Guild} */
     guild;
 
@@ -205,11 +195,9 @@ export class guildRoleManager extends BaseStruct {
             try {
                 const mrole = [...this.cache.values()].find(r => (r.name == role.name));
                 if (mrole) throw "ROLE ALREADY EXISTS!";
-    
-                const headers = { Authorization: this.#token }
                 // this.cache.set(rid, grole);
                 
-                const response = await axios.post(`https://discord.com/api/guilds/${this.guild.id}/roles`, role.toObj(), { headers });
+                const response = await this.client.axiosCustom.post(`/guilds/${this.guild.id}/roles`, role.toObj());
     
                 const newRole = new guildRole(response.data);
                 this.cache.set(newRole.id, newRole);
@@ -231,11 +219,9 @@ export class guildRoleManager extends BaseStruct {
             try {
                 const grole = this.guild.roles.cache?.get(role.id);
                 if (!grole) throw "ROLE DOES NOT EXIST!";
-    
-                const headers = { Authorization: this.#token }
                 // this.cache.set(rid, grole);
                 
-                const response = await axios.delete(`https://discord.com/api/guilds/${this.guild.id}/roles/${role.id}`, { headers });
+                const response = await this.client.axiosCustom.delete(`/guilds/${this.guild.id}/roles/${role.id}`);
                 resolve(true);
             } catch (err) {
                 throw err;
@@ -249,9 +235,9 @@ export class guildRoleManager extends BaseStruct {
      * @param {Array<guildRole>} roles 
      * @param {String} uid UID or GuildId
      */
-    constructor(roles, uid, token) {
-        super();
-        this.#token = token;
+    constructor(roles, uid, client) {
+        super(client);
+
         this.#uid = uid;
         this.cache = new Map();
         roles.forEach((gr) => this.cache.set(gr.id, gr));

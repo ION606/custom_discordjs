@@ -40,8 +40,7 @@ export default class invite extends BaseStruct {
     async delete() {
         return new Promise(async (resolve) => {
             try {
-                const headers = { Authorization: this.#token }
-                const response = await axios.delete(`https://discord.com/api/invites/${this.code}`, { headers });
+                const response = await this.client.axiosCustom.delete(`/invites/${this.code}`);
                 resolve(response.data);
             } catch (err) {
                 throw err.data;
@@ -49,10 +48,9 @@ export default class invite extends BaseStruct {
         });
     }
 
-    constructor(o, guild, token) {
-        super();
+    constructor(o, guild, client) {
+        super(client);
         
-        this.#token = token;
         for (const k in this) {
             if (o[k]) {
                 if (k == 'guild') { this.guild = guild }

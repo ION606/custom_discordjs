@@ -36,16 +36,9 @@ export class Channel extends BaseStruct {
     /** @type {Boolean} */
     nsfw;
 
-    /** @type {String} */
-    #token;
-
 
     async getChannelData() {
-        const headers = {
-            Authorization: this.#token
-        }
-
-        const response = await axios.get(`https://discord.com/api/channels/${this.id}`, { headers });
+        const response = await this.client.axiosCustom.get(`/channels/${this.id}`);
         const channelData = response.data;
         
         for (const k in this) {
@@ -56,10 +49,9 @@ export class Channel extends BaseStruct {
     }
 
 
-    constructor(channel, guild, token = null) {
-        super();
+    constructor(channel, guild, client = null) {
+        super(client);
         
-        this.#token = token;
         for (const k in this) {
             if (channel[k]) this[k] = channel[k];
         }
@@ -74,11 +66,6 @@ export class Channel extends BaseStruct {
     async send(inp) {
         return new Promise(async (resolve) => {
             const toSend = (typeof inp == 'string') ? inp : inp.content;
-            const config = {
-                headers: {
-                    Authorization: this.#token
-                }
-            }
 
             var embds = undefined;
             if (inp.embeds) {
@@ -88,13 +75,13 @@ export class Channel extends BaseStruct {
                 }
             }
 
-            const response = await axios.post(`https://discord.com/api/channels/${this.id}/messages`, {
+            const response = await this.client.axiosCustom.post(`/channels/${this.id}/messages`, {
                 content: toSend,
                 message_reference: inp.message_reference || undefined,
                 embeds: embds
-            }, config);
+            });
 
-            resolve(new message(response.data, this.#token));
+            resolve(new message(response.data, this.client));
         });
     }
 
@@ -105,22 +92,16 @@ export class Channel extends BaseStruct {
      */
     async getMessages(configs) {
         return new Promise(async (resolve) => {
-            const config = {
-                headers: {
-                    Authorization: this.#token
-                }
-            }
-
             var strconf = "?";
             for (const i in configs) {
-                console.log(i);
+                strconf += `${i}=${configs[i]}&`;
             }
 
-            const response = await axios.get(`https://discord.com/api/channels/${this.id}/messages`, config);
+            const response = await this.client.axiosCustom.get(`/channels/${this.id}/messages${strconf}`);
             
             const msgMap = new Map();
             for (const msgKey in response.data) {
-                const m = new message(response.data[msgKey], this.#token, this.guild);
+                const m = new message(response.data[msgKey], this.client, this.guild);
                 msgMap.set(m.id, m);
             }
             resolve(msgMap);
@@ -130,7 +111,7 @@ export class Channel extends BaseStruct {
     toObj() {
         var obj = {};
         for (const key in this) {
-            if (key != '#token' && key != 'guild') {
+            if (key != 'guild') {
                 obj[key] = this[key];
             }
         }

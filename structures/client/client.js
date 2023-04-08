@@ -148,7 +148,7 @@ export class Client extends EventEmitter {
         if (!isUser) token = "Bot " + token;
         this.axiosCustom = axios.create({
             baseURL: "https://discord.com/api/",
-            headers: { Authorization: this.#token }
+            headers: { Authorization: token }
         });
         
         return new Promise((resolve, reject) => {
@@ -180,7 +180,7 @@ export class Client extends EventEmitter {
 
             this.ws.on('message', async (msg) => {
                 const data = JSON.parse(msg.toString());
-                const response = await handleResponses(data, token, this.id);
+                const response = await handleResponses(data, token, this);
 
                 if (response.op == 10) { return this.#startHeartBeat(response.heartBeat, token); }
 

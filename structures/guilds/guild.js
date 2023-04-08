@@ -12,8 +12,6 @@ import { BaseStruct } from '../baseStruct.js';
 //See https://discord.com/developers/docs/resources/guild
 
 export default class Guild extends BaseStruct {
-    #token;
-
     //#region Vars
     /** @type {String[]} */
     embeded_activities;
@@ -159,33 +157,27 @@ export default class Guild extends BaseStruct {
     //#endregion
 
     
-    async #getChannels(token) {
-        const config = {
-            headers: {
-                Authorization: token
-            }
-        }
-
-        const response = await axios.get(`https://discord.com/api/guilds/${this.id}/channels`, config);
+    async #getChannels() {
+        const response = await this.client.axiosCustom.get(`/guilds/${this.id}/channels`);
         
         const m = new Map();
         for (const channel of response.data) {
             if (channel.type == 4) continue;
-            m.set(channel.id, new Channel(channel, this, token));
+            m.set(channel.id, new Channel(channel, this, this.client));
         }
 
-        this.channels = new GuildChannelManager(token, this, m);
+        this.channels = new GuildChannelManager(this.client, this, m);
     }
 
 
-    async #getMembers(membersObj, token) {
+    async #getMembers(membersObj) {
         for (const m of membersObj) {
             var tempRoles = [];
             for (const rid of m["roles"]) {
                 tempRoles.push(this.roles.cache.get(rid));
             }
 
-            const roleTemp = new guildMemberRoleManager(tempRoles, m["user"]["id"], token);
+            const roleTemp = new guildMemberRoleManager(tempRoles, m["user"]["id"], this.client);
             roleTemp.guild = this;
             const mem = new member(m, roleTemp);
             
@@ -197,17 +189,11 @@ export default class Guild extends BaseStruct {
      * @returns {Promise<guildInvite[]>}
      */
     getInvites() {
-        return new Promise(async (resolve, reject) => {
-            const config = {
-                headers: {
-                    Authorization: this.#token
-                }
-            }
-    
-            const response = await axios.get(`https://discord.com/api/guilds/${this.id}/invites`, config);
+        return new Promise(async (resolve, reject) => {    
+            const response = await this.client.axiosCustom.get(`/guilds/${this.id}/invites`);
             const invites = [];
             for (const i of response.data) {
-                invites.push(new guildInvite(i, this, this.#token));
+                invites.push(new guildInvite(i, this, this.client));
             }
 
             resolve(invites);
@@ -218,12 +204,12 @@ export default class Guild extends BaseStruct {
      * @param {Object} o 
      * @param {String} token 
      */
-    constructor(o, token) {
-        super();
+    constructor(o, client) {
+        super(client);
+
         this.members = new Map();
         this.channels = new Map();
         this.stickers = [];
-        this.#token = token;
 
         for (const field in this) {
             if (o[field] == undefined || field == "channels" || field == "members") continue;
@@ -233,21 +219,21 @@ export default class Guild extends BaseStruct {
                 for (const r of o[field]) {
                     temp.push(new guildRole(r));
                 }
-                this.roles = new guildRoleManager(temp, false, token);
+                this.roles = new guildRoleManager(temp, false, this.client);
                 this.roles.guild = this;
             }
             else if (field == 'stickers') {
-                this.stickers = new guildStickerManager(this, o[field], token);
+                this.stickers = new guildStickerManager(this, o[field], this.client);
             }
             else if (field == 'threads') {
-                this.threads = new ThreadManager(o[field], this, token);
+                this.threads = new ThreadManager(o[field], this, this.client);
             }
             else {
                 this[field] = o[field];
             }
         }
 
-        this.#getMembers(o["members"], token);
-        this.#getChannels(token);
+        this.#getMembers(o["members"]);
+        this.#getChannels();
     }
 }
