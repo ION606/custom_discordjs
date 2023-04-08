@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { Channel } from './Channel.js';
 import Guild from './Guild.js';
-import { BaseStruct } from '../baseStruct.js';
+import { DataManager } from '../DataManager.js';
 
 
-export class GuildChannelManager extends BaseStruct {
+export class GuildChannelManager extends DataManager {
     /** @type {Guild} */
     guild;
 

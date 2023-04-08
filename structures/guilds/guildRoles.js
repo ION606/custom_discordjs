@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Guild from './Guild.js';
-import { BaseStruct } from '../baseStruct.js';
+import { DataManager } from '../DataManager.js';
 
 // Maybe add support for this
 // https://discord.com/developers/docs/resources/guild#modify-guild-role-positions
@@ -98,7 +98,7 @@ export class newGuildRoleObj {
 }
 
 
-export class guildMemberRoleManager extends BaseStruct {
+export class guildMemberRoleManager extends DataManager {
     #uid;
 
     /** @type {Guild} */
@@ -162,7 +162,7 @@ export class guildMemberRoleManager extends BaseStruct {
 }
 
 
-export class guildRoleManager extends BaseStruct {
+export class guildRoleManager extends DataManager {
     #uid;
     
     /** @type {Guild} */

@@ -1,4 +1,4 @@
-export class BaseStruct {
+export class DataManager {
     /** @type {import('./client/client.js').Client} */
     client;
 

@@ -1,10 +1,10 @@
 import axios from "axios";
 import user from "../messages/User.js";
 import Guild from "./Guild.js";
-import { BaseStruct } from "../baseStruct.js";
+import { DataManager } from "../DataManager.js";
 
 
-export class guildSticker extends BaseStruct {    
+export class guildSticker extends DataManager {    
     /** @type {String} */
     id;
 
@@ -78,7 +78,7 @@ export class guildSticker extends BaseStruct {
 }
 
 
-export class guildStickerManager extends BaseStruct{
+export class guildStickerManager extends DataManager{
     /** @type {Map<String, guildSticker>} */
     cache;
 

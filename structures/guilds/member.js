@@ -1,10 +1,10 @@
 import axios from 'axios';
 import {guildRole, guildMemberRoleManager} from "./guildRoles.js";
-import { BaseStruct } from '../baseStruct.js';
+import { DataManager } from '../DataManager.js';
 // https://discord.com/developers/docs/resources/guild#modify-guild-member
 
 
-export default class member extends BaseStruct {
+export default class member extends DataManager {
     /** @type {Object} */
     user;
 

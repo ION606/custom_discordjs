@@ -7,11 +7,11 @@ import { guildSticker, guildStickerManager } from './GuildStickers.js';
 import { GuildChannelManager } from './GuildChannelManager.js';
 import { Channel } from './Channel.js';
 import { ThreadManager } from './ThreadManager.js';
-import { BaseStruct } from '../baseStruct.js';
+import { DataManager } from '../DataManager.js';
 
 //See https://discord.com/developers/docs/resources/guild
 
-export default class Guild extends BaseStruct {
+export default class Guild extends DataManager {
     //#region Vars
     /** @type {String[]} */
     embeded_activities;

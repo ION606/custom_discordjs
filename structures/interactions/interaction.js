@@ -4,7 +4,7 @@ import { message } from '../messages/message.js';
 import { Channel } from '../guilds/Channel.js';
 import {Embed} from '../messages/embed.js';
 import Guild from '../guilds/Guild.js';
-import { BaseStruct } from '../baseStruct.js';
+import { DataManager } from '../DataManager.js';
 
 
 class interactionOptions {
@@ -27,7 +27,7 @@ class interactionOptions {
     }
 }
 
-export class Interaction extends BaseStruct {
+export class Interaction extends DataManager {
     /** @type {author} */
     user;
 

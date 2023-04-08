@@ -1,8 +1,8 @@
 import axios from 'axios';
 import {message} from '../messages/message.js';
-import { BaseStruct } from '../baseStruct.js';
+import { DataManager } from '../DataManager.js';
 
-export class Channel extends BaseStruct {
+export class Channel extends DataManager {
     /** @type {String} */
     id;
 
@@ -111,7 +111,7 @@ export class Channel extends BaseStruct {
     toObj() {
         var obj = {};
         for (const key in this) {
-            if (key != 'guild') {
+            if (key != 'guild' && key != 'client') {
                 obj[key] = this[key];
             }
         }

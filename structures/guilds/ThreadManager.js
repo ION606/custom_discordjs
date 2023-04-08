@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Channel } from "./Channel.js";
-import { BaseStruct } from "../baseStruct.js";
+import { DataManager } from "../DataManager.js";
 
 export class Thread extends Channel {
     /** @type {Number} */
@@ -22,7 +22,7 @@ export class Thread extends Channel {
 }
 
 
-export class ThreadManager extends BaseStruct {
+export class ThreadManager extends DataManager {
     /** @type {Map<String, Thread>} */
     cache;
 
@@ -38,6 +38,13 @@ export class ThreadManager extends BaseStruct {
         return threadToDel;
     }
 
+    /**
+     * @param {String} name 
+     */
+    findByName(name) {
+        return [...this.cache.values()].find(r => (r.name == name));
+    }
+
 
     /**
      * @description returns the deleted thread if successful
@@ -45,22 +52,66 @@ export class ThreadManager extends BaseStruct {
      * @param {String} reason
      * @returns {promise<Channel>}
      */
-async delete(thread, reason=null) {
-    return new Promise(async (resolve) => {
-        try {
-            if (!this.cache.has(thread.id)) throw "This thread does not exist!";
+    async delete(thread, reason=null) {
+        return new Promise(async (resolve) => {
+            try {
+                if (!this.cache.has(thread.id)) throw "THREAD DOES NOT EXIST!";
+        
+                await this.client.axiosCustom.delete(`/channels/${thread.id}`);
+                const newChannel = this.cache.get(thread.id);
+                this.cache.delete(thread.id);
+                resolve(newChannel);
+            } catch (err) {
+                throw err;
+            }
+        });
+    }
+
+
+    /**
+     * @description returns the created thread if successful
+     * @param {Thread} thread
+     * @param {String} reason
+     * @returns {promise<Channel>}
+     */
+    async create(thread, reason=null) {
+        return new Promise(async (resolve) => {
+            try {
+                const ttemp = this.findByName(thread.name);
+                if (ttemp && ttemp.parent_id == thread.parent_id) throw "THREAD ALREADY EXISTS!";
+
+                const response = await this.client.axiosCustom.post(`/channels/${thread.parent_id}/threads`, thread.toObj());
+                const newThread = new Thread(response.data);
+                this.cache.set(newThread.id, newThread);
+                resolve(newThread);
+            } catch (err) {
+                throw err;
+            }
+        });
+    }
+
+
+    /**
+     * @description returns the created thread if successful
+     * @param {Thread} thread
+     * @param {String} reason
+     * @returns {promise<Channel>}
+     */
+        async edit(thread, reason=null) {
+            return new Promise(async (resolve) => {
+                try {
+                    if (!this.cache.has(thread.id)) throw "THREAD DOES NOT EXIST!";
     
-            await this.client.axiosCustom.delete(`/channels/${thread.id}`);
-            const newChannel = this.cache.get(thread.id);
-            this.cache.delete(thread.id);
-            resolve(newChannel);
-        } catch (err) {
-            throw err;
+                    const response = await this.client.axiosCustom.patch(`/channels/${thread.parent_id}/threads`, thread.toObj());
+                    const newThread = new Thread(response.data);
+                    this.cache.set(newThread.id, newThread);
+                    resolve(newThread);
+                } catch (err) {
+                    throw err;
+                }
+            });
         }
-    });
-}
-
-
+    
 
     constructor(o, guild, client) {
         super(client);

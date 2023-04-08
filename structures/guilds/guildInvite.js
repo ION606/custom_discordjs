@@ -2,10 +2,10 @@ import author from '../messages/User.js';
 import Guild from './Guild.js'
 import { Channel } from './Channel.js';
 import axios from 'axios';
-import { BaseStruct } from '../baseStruct.js';
+import { DataManager } from '../DataManager.js';
 
 
-export default class invite extends BaseStruct {
+export default class invite extends DataManager {
     #token;
 
     code;

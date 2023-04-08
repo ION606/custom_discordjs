@@ -2,10 +2,10 @@ import author from './User.js';
 import axios from 'axios';
 import { Channel } from '../guilds/Channel.js';
 import Guild from '../guilds/Guild.js';
-import { BaseStruct } from '../baseStruct.js';
+import { DataManager } from '../DataManager.js';
 
 
-export class message extends BaseStruct {
+export class message extends DataManager {
     /** @type {author} */
     author;
 
