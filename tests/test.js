@@ -1,5 +1,6 @@
 import { Client, gateWayIntents, message, Interaction } from '../structures/types.js';
 import config from '../config.json' assert { type: 'json' };
+import { buttonTests } from './Buttontests.js';
 const { bottoken } = config;
 
 var c = new Client({
@@ -23,6 +24,9 @@ c.login(bottoken);
 
 
 c.on('messageRecieved', /**@param {message} message*/ async (message) => {
+    if (message.content == 'buttontest') {
+        return buttonTests(message);
+    }
     (await import('./messageTests.js')).default(message);
 });
 

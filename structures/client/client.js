@@ -150,6 +150,13 @@ export class Client extends EventEmitter {
             baseURL: "https://discord.com/api/",
             headers: { Authorization: token }
         });
+
+        this.axiosCustom.interceptors.response.use((response) => {
+            return response;
+        }, function (err) {
+            // console.log(err);
+            throw `REQUEST FAILED WITH STATUS CODE ${err.response.status} AND REASON "${err.response.data.message}"`;
+        });
         
         return new Promise((resolve, reject) => {
             this.ws = new WebSocket("wss://gateway.discord.gg/?v=10&encoding=json");

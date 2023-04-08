@@ -65,7 +65,7 @@ export class Channel extends DataManager {
      */
     async send(inp) {
         return new Promise(async (resolve) => {
-            const toSend = (typeof inp == 'string') ? inp : inp.content;
+            const content = (typeof inp == 'string') ? inp : inp.content;
 
             var embds = undefined;
             if (inp.embeds) {
@@ -75,11 +75,11 @@ export class Channel extends DataManager {
                 }
             }
 
-            const response = await this.client.axiosCustom.post(`/channels/${this.id}/messages`, {
-                content: toSend,
-                message_reference: inp.message_reference || undefined,
-                embeds: embds
-            });
+            const toSend = (typeof inp == 'string') ? { content: inp } : structuredClone(inp);
+            toSend["embeds"] = embds;
+            toSend["message_reference"] = inp.message_reference || undefined;
+
+            const response = await this.client.axiosCustom.post(`/channels/${this.id}/messages`, toSend);
 
             resolve(new message(response.data, this.client));
         });

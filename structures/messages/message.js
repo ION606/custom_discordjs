@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Channel } from '../guilds/Channel.js';
 import Guild from '../guilds/Guild.js';
 import { DataManager } from '../DataManager.js';
+import { MessageActionRow } from './MessageActionRow.js';
 
 
 export class message extends DataManager {
@@ -57,24 +58,46 @@ export class message extends DataManager {
     /** @type {Channel} */
     channel;
 
+    /** @type {MessageActionRow[]} */
+    components;
 
     /**
-     * @param {String} content 
+     * @param {MessageActionRow} ar 
+     */
+    addComponents(ar) {
+        if (this.components.length > 5) throw "MAXIMUM SIZE REACHED (5)";
+        this.components.push(ar);
+    }
+
+
+    /**
+     * @param {String | message} content 
      * @returns {Promise<message>}
      */
     reply(inp) {
         return new Promise(async (resolve, reject) => {
-            const refObj = {
-                message_id: this.id,
-                channel_id: this.channel.id,
-                guild_id: this.guild_id,
-                fail_if_not_exists: false //when sending, whether to error if the referenced message doesn't exist instead of sending as a normal (non-reply) message, default true
+            try {
+                const refObj = {
+                    message_id: this.id,
+                    channel_id: this.channel.id,
+                    guild_id: this.guild_id,
+                    fail_if_not_exists: false //when sending, whether to error if the referenced message doesn't exist instead of sending as a normal (non-reply) message, default true
+                }
+    
+                const toSend = (typeof inp == 'string') ? {content: inp} : structuredClone(inp);
+                toSend['message_reference'] = refObj;
+    
+                if (inp.components) {
+                    toSend["components"] = [];
+                    for (const k of inp.components) {
+                        toSend["components"].push(k.toObj());
+                    }
+                }
+
+                resolve(await this.channel.send(toSend));
+            } catch(err) {
+                throw err;
             }
-
-            const toSend = (typeof inp == 'string') ? {content: inp} : inp;
-            toSend['message_reference'] = refObj;
-
-            resolve(await this.channel.send(toSend));
         });
     }
 
@@ -99,6 +122,13 @@ export class message extends DataManager {
     async edit(inp) {
         return new Promise(async (resolve, reject) => {
             const newMsg = (typeof inp == "string") ? {content: inp} : inp;
+
+            if (this.components) {
+                newMsg.components = [];
+                for (const k of this.components) {
+                    newMsg.components.push(k.toObj());
+                }
+            }
     
             this.client.axiosCustom.patch(`/channels/${this.channel.id}/messages/${this.id}`, newMsg).then((response) => {
                 resolve(response.data);
@@ -117,23 +147,23 @@ export class message extends DataManager {
 
         this.guild = guild;
 
-        for (const k in this) {
-            if (msgRaw[k] != undefined) {
-                if (k == 'type') {
-                    this.type = (msgRaw['guild_id']) ? msgRaw[k] : 1;
+        for (const k in msgRaw) {
+            if (k == 'type') {
+                this.type = (msgRaw['guild_id']) ? msgRaw[k] : 1;
+            }
+            else if (k == "author") {
+                this[k] = new author(msgRaw[k]);
+            }
+            else {
+                if (k == 'channel_id') {
+                    this.channel = new Channel({id: msgRaw[k]}, this.guild, client);
                 }
-                else if (k == "author") {
-                    this[k] = new author(msgRaw[k]);
-                }
-                else {
-                    if (k == 'channel_id') {
-                        this.channel = new Channel({id: msgRaw[k]}, this.guild, client);
-                    }
 
-                    this[k] = msgRaw[k];
-                }
+                this[k] = msgRaw[k];
             }
         }
+
+        if (this.components == undefined) this.components = [];
     }
 }
 
