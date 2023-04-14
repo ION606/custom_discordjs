@@ -1,7 +1,7 @@
 import gateWayEvents from '../gateway/dispatch.js'
 import { message } from '../messages/message.js';
-import {Interaction} from '../interactions/interaction.js';
 import Guild from '../guilds/Guild.js';
+import { createInteraction } from '../interactions/createInteraction.js';
 
 
 /**
@@ -28,7 +28,7 @@ export default async function handleEvents(msgObj, token, client) {
                 break;
 
             case gateWayEvents.InteractionCreate:
-                resolve({op: op, t: t, interaction: new Interaction(msgObj["d"], client)});
+                resolve({op: op, t: t, interaction: createInteraction(msgObj["d"], client)}); //interaction: new Interaction(msgObj["d"], client)
                 break;
 
             case gateWayEvents.GuildCreate:

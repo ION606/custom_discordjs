@@ -21,6 +21,7 @@ class interactionOptions {
     focused;
 
     constructor(o) {
+        console.log(o);
         for (const k in this) {
             if (o[k]) this[k] = o[k];
         }
