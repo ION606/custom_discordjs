@@ -65,23 +65,26 @@ export class Channel extends DataManager {
      */
     async send(inp) {
         return new Promise(async (resolve) => {
-            const content = (typeof inp == 'string') ? inp : inp.content;
-
-            var embds = undefined;
-            if (inp.embeds) {
-                embds = [];
-                for (const i of inp.embeds) {
-                    embds.push(i.toJSON());
+            try {
+                var embds = undefined;
+                if (inp.embeds) {
+                    embds = [];
+                    for (const i of inp.embeds) {
+                        embds.push(i.toJSON());
+                    }
                 }
+    
+                var toSend = (typeof inp == 'string') ? { content: inp } : structuredClone(inp);
+                toSend["embeds"] = embds;
+                toSend["message_reference"] = inp.message_reference || undefined;
+                toSend = Object.fromEntries(Object.entries(toSend).filter((o) => o[1] != undefined));
+
+                const response = await this.client.axiosCustom.post(`/channels/${this.id}/messages`, toSend);
+
+                resolve(new message(response.data, this.client));
+            } catch (err) {
+                throw err;
             }
-
-            const toSend = (typeof inp == 'string') ? { content: inp } : structuredClone(inp);
-            toSend["embeds"] = embds;
-            toSend["message_reference"] = inp.message_reference || undefined;
-
-            const response = await this.client.axiosCustom.post(`/channels/${this.id}/messages`, toSend);
-
-            resolve(new message(response.data, this.client));
         });
     }
 

@@ -1,3 +1,6 @@
+/**
+ * @enum {string}
+ */
 export default Object.freeze({
     ApplicationCommandPermissionsUpdate: "APPLICATION_COMMAND_PERMISSIONS_UPDATE",
     ChannelCreate: "CHANNEL_CREATE",

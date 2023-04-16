@@ -1,3 +1,6 @@
+/**
+ * @enum {number}
+ */
 export const interactionTypes = Object.freeze({
     Ping: 1,
     ApplicationCommand: 2,

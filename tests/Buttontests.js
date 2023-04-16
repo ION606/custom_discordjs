@@ -10,25 +10,38 @@ import { ChannelSelectMenu, StringMenuComponent, StringSelectMenu, userSelectMen
  */
 export async function buttonTests(mog) {
     var m = new message();
-    // const comp = new Button();
-    // comp.style = MessageButtonStyles.SUCCESS;
-    // comp.label = "HELLO WORLD";
-    // comp.custom_id = "temptemp";
 
-    const c = new StringSelectMenu();
-    const comp2 = new StringMenuComponent();
-    comp2.value = 'llllll';
-    comp2.label = 'llllll';
-    c.options.push(comp2);
-    c.custom_id = "temp";
+    const btnSuccess = new Button();
+    btnSuccess.style = MessageButtonStyles.SUCCESS;
+    btnSuccess.label = "SUCCESS";
+    btnSuccess.custom_id = "tempbtnsu";
 
-    const comp3 = new userSelectMenu();
-    comp3.custom_id = "userMenu";
-    
+    const btnDanger = new Button();
+    btnDanger.style = MessageButtonStyles.DANGER;
+    btnDanger.label = "HELLO WORLD";
+    btnDanger.custom_id = "tempbtnda";
+
+    const btnSecondary = new Button();
+    btnSecondary.style = MessageButtonStyles.SECONDARY;
+    btnSecondary.label = "HELLO WORLD";
+    btnSecondary.custom_id = "tempbtnse";
+
+    const btnPrim = new Button();
+    btnPrim.style = MessageButtonStyles.PRIMARY;
+    btnPrim.label = "HELLO WORLD";
+    btnPrim.custom_id = "temppr";
+
+    const btnLink = new Button();
+    btnLink.style = MessageButtonStyles.LINK;
+    btnLink.label = "HELLO WORLD";
+    btnLink.url = 'https://www.google.com/';
+
     const row = new MessageActionRow();
-    // row.addComponent(comp);
-    // row.addComponent(c);
-    row.addComponent(comp3);
+    row.addComponent(btnSuccess);
+    row.addComponent(btnDanger);
+    row.addComponent(btnSecondary);
+    row.addComponent(btnPrim);
+    row.addComponent(btnLink);
     m.addComponents(row);
     m.content = "OOGA BOOGA";
 

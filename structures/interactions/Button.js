@@ -27,10 +27,19 @@ export class Button {
     toObj() {
         var obj = {type: 2};
         for (const i in this) {
+            if (i == "url" && this.style != MessageButtonStyles.LINK) {
+                if (this.url != undefined) throw "CUSTOM ID MISSING";
+            }
+            if (i == "custom_id" && this.style == MessageButtonStyles.LINK) {
+                if (this.custom_id != undefined) throw "BUTTONS OF TYPE \"LINK\" CAN NOT HAVE A CUSTOM ID";
+            }
             obj[i] = this[i];
         }
         return obj;
     }
     
-    constructor() {}
+    /**
+     * @param {MessageButtonStyles} style
+     */
+    constructor(style = undefined) { this.style = style; }
 }

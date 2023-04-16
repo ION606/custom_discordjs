@@ -1,3 +1,6 @@
+/**
+ * @enum {number}
+ */
 export const MessageButtonStyles = Object.freeze({
     PRIMARY: 1,
     SECONDARY: 2,

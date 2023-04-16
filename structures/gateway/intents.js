@@ -1,3 +1,6 @@
+/**
+ * @enum {number}
+ */
 export const gateWayIntents = Object.freeze({
     Guilds: 1 << 0,
     GuildMembers: 1 << 1,

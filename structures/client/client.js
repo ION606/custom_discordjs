@@ -154,7 +154,6 @@ export class Client extends EventEmitter {
         this.axiosCustom.interceptors.response.use((response) => {
             return response;
         }, function (err) {
-            // console.log(err);
             throw `REQUEST FAILED WITH STATUS CODE ${err.response.status} AND REASON "${err.response.data.message}"`;
         });
         
