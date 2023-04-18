@@ -49,4 +49,5 @@ c.on('guildCreate', async (guild) => {
 
 c.on('ready', () => {
     console.log("BOT ONLINE!");
+    console.log(c.commands);
 });

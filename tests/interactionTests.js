@@ -13,6 +13,13 @@ export default async (interaction) => {
         const response = await interaction.followUp("followup!");
         await delay(2000);
         response.delete();
+
+        // interaction.client.commands.set({
+        //     name: 'none',
+        //     description: 'eheheheheh'
+        // });
+        // const delResp = await interaction.client.commands.delete('none');
+        // console.log(delResp);
     } else {
         console.log(interaction);
     }

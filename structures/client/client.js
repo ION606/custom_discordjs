@@ -9,6 +9,8 @@ import { exit } from 'process';
 import Guild from '../guilds/Guild.js';
 import user from '../messages/User.js';
 import { Thread } from '../guilds/ThreadManager.js';
+import { InteractionManager } from '../interactions/InteractionManager.js';
+import { Interaction } from '../interactions/interaction.js';
 
 
 
@@ -42,6 +44,9 @@ export class Client extends EventEmitter {
 
     /** @type {import('axios').AxiosInstance} */
     axiosCustom;
+
+    /** @type {InteractionManager} */
+    commands;
 
     /**
      * @param {opts} input 
@@ -77,10 +82,13 @@ export class Client extends EventEmitter {
         this.emit("messageRecieved", msg);
     }
 
-    ready(response) {
+    async ready(response) {
         this.user_profile = response.profile;
         this.user_settings = response.config;
         this.id = response.profile.id;
+
+        const commandsRaw = (await this.axiosCustom.get(`applications/${this.id}/commands`)).data;
+        this.commands = new InteractionManager(commandsRaw, this);
         this.emit('ready');
     }
 
