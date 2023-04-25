@@ -5,6 +5,8 @@ import { Channel } from '../guilds/Channel.js';
 import {Embed} from '../messages/embed.js';
 import Guild from '../guilds/Guild.js';
 import { DataManager } from '../DataManager.js';
+import { Modal, ModalComponent } from './Modal.js';
+import { MessageActionRow } from '../messages/MessageActionRow.js';
 
 
 class interactionOptions {
@@ -21,7 +23,6 @@ class interactionOptions {
     focused;
 
     constructor(o) {
-        console.log(o);
         for (const k in this) {
             if (o[k]) this[k] = o[k];
         }
@@ -59,12 +60,22 @@ export class Interaction extends DataManager {
     /** @type {interactionOptions} */
     data;
 
+    /**
+     * @param {Modal} m 
+     */
+    async #sendModal(m) {
+        const response = await this.client.axiosCustom.post(`/interactions/${this.id}/${this.#token}/callback`, {type: 9, data: m.toObj()});
+        return response.data;
+    }
 
     /**
      * @param {{content: String, ephemeral?: Boolean, embeds: [Embed]} | String} inp 
      * @returns {Promise<message>}
      */
     async reply(inp) {
+        //Check for action row
+        if (inp instanceof Modal) return await this.#sendModal(inp);
+
         return new Promise(async (resolve, reject) => {
             const toSend = (typeof inp == 'string') ? inp : inp.content;
 
@@ -173,7 +184,9 @@ export class Interaction extends DataManager {
      */
     constructor(intRaw, client) {
         super(client);
+        Object.defineProperty(this, 'guild', { enumerable: false });
 
+        if (!intRaw) return;
         this.#token = intRaw["token"];
 
         for (const k in this) {

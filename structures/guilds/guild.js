@@ -8,6 +8,7 @@ import { GuildChannelManager } from './GuildChannelManager.js';
 import { Channel } from './Channel.js';
 import { ThreadManager } from './ThreadManager.js';
 import { DataManager } from '../DataManager.js';
+// import { inspect } from 'util';
 
 //See https://discord.com/developers/docs/resources/guild
 
@@ -185,6 +186,7 @@ export default class Guild extends DataManager {
         }
     }
 
+
     /**
      * @returns {Promise<guildInvite[]>}
      */
@@ -199,6 +201,12 @@ export default class Guild extends DataManager {
             resolve(invites);
         });
     }
+
+
+    // toString() {
+    //     return inspect(this, false, 1);
+    // }
+
 
     /**
      * @param {Object} o 
