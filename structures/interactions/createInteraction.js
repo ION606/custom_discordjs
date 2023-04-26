@@ -50,8 +50,8 @@ export function createInteraction(intRaw, client) {
             return createSelectMenu(intRaw, client);
 
         case interactionTypes.ModalSubmit:
-            return console.log("MODALS NOT FULLY IMPLEMENTED!");
-            // return new Modal(intRaw, client);
+            // return console.log("MODALS NOT FULLY IMPLEMENTED!");
+            return new Modal(intRaw, client);
 
         case interactionTypes.Ping:
             console.log("pong");

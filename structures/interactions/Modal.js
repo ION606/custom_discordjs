@@ -1,3 +1,4 @@
+import { MessageActionRow } from "../messages/MessageActionRow.js";
 import { Interaction } from "./interaction.js";
 
 /** @enum {number} */
@@ -41,6 +42,8 @@ export class ModalComponent {
     }
 
     constructor(obj) {
+        if (obj == undefined) return;
+        
         for (const k in this) {
             if (obj[k] != undefined) {
                 this[k] = obj[k];
@@ -57,34 +60,62 @@ export class Modal extends Interaction {
     /** @type {String} */
     custom_id;
 
-    /** @type {ModalComponent[]} */
+    /** @type {Map<String, ModalComponent>} */
     components;
 
     /**
-     * @param {ModalComponent} c 
+     * @param {ModalComponent} c
+     * @returns {Boolean} true is added false otherwise
      */
     addComponent(c) {
-        this.components.push(c);
+        if (!c || this.components.has(c.custom_id)) return true;
+        this.components.set(c.custom_id, c);
+    }
+
+    /**
+     * @description returns the Modal's components as a map of
+     * 
+     * `custom_id ==> input`
+     * @returns {[{value: String, custom_id: String}]}
+     */
+    getComponents() {
+        const m = new Map();
+        for (const k of this.components) {
+            m.set(k[0], k[1]);
+        }
+        return m;
+    }
+
+    /**
+     * @description returns the component with the custom id specified
+     * @param {String} cid
+     * @returns {String}
+     */
+    getComponent(cid) {
+        return this.components.get(cid).value;
     }
 
     toObj() {
         const obj = {title: this.title, custom_id: this.custom_id, components: []};
-        for (const comp of this.components) {
-            obj.components.push(comp.toObj());
+        for (const key in this.components) {
+            const comp = this.components.get(key);
+            const a = new MessageActionRow();
+            a.addComponent(comp);
+            obj.components.push(a.toObj());
         }
         return obj;
     }
     
     constructor(intRaw, client) {
         super(intRaw, client);
-        this.components = [];
+        this.components = new Map();
 
         if (!intRaw) return;
 
-        // [ { value: 'nnnnnnnnnnnnn', type: 4, custom_id: 'nonononononono' } ]
         for (const opt of intRaw.data.components) {
-            //These are nested
-            // this.components.push(new ModalComponent());
+            const compRaw = opt.components[0];
+            const comp = new ModalComponent(compRaw);
+            this.components.set(comp.custom_id, comp.value);
         }
     }
 }

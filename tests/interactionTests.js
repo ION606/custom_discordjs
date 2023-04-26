@@ -14,12 +14,17 @@ export default async (interaction) => {
         c.custom_id = 'nonononononono';
         c.label = "hi";
         c.style = 1;
+
+        const c2 = new ModalComponent();
+        c2.custom_id = 'the_capital_letter_n';
+        c2.label = "NIIIIIIIIIIIIII";
+        c2.style = 1;
+
         m.custom_id = "temp";
         m.title = "TITLE HERE";
 
-        const a = new MessageActionRow();
-        a.addComponent(c);
-        m.addComponent(a);
+        m.addComponent(c);
+        m.addComponent(c2);
         interaction.reply(m);
         return;
 
@@ -37,7 +42,11 @@ export default async (interaction) => {
         // });
         // const delResp = await interaction.client.commands.delete('none');
         // console.log(delResp);
-    } else {
+    }
+    else if (interaction.type == interactionTypes.ModalSubmit) {
+        console.log(interaction.getComponents());
+    }    
+    else {
         console.log(interaction);
     }
 }
