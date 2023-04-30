@@ -16,8 +16,8 @@ export default async (interaction) => {
         c.style = 1;
 
         const c2 = new ModalComponent();
-        c2.custom_id = 'the_capital_letter_n';
-        c2.label = "NIIIIIIIIIIIIII";
+        c2.custom_id = 'the_capital_letter_l';
+        c2.label = "HELLO WORLD";
         c2.style = 1;
 
         m.custom_id = "temp";

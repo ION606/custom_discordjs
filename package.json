@@ -1,6 +1,6 @@
 {
   "name": "iondiscordjs",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "because discord.js is annoying",
   "main": "tests\\test.js",
   "scripts": {
