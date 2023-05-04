@@ -7,8 +7,8 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 /** @param {Interaction} interaction */
 export default async (interaction) => {
     if (interaction.type == interactionTypes.ApplicationCommand) {
-        console.log(interaction.data);
 
+        return interaction.deferReply();
         const m = new Modal(null, interaction.client);
         const c = new ModalComponent();
         c.custom_id = 'nonononononono';

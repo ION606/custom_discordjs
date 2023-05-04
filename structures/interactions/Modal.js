@@ -68,15 +68,16 @@ export class Modal extends Interaction {
      * @returns {Boolean} true is added false otherwise
      */
     addComponent(c) {
-        if (!c || this.components.has(c.custom_id)) return true;
+        if (!c || this.components.has(c.custom_id)) return false;
         this.components.set(c.custom_id, c);
+        return true;
     }
 
     /**
      * @description returns the Modal's components as a map of
      * 
      * `custom_id ==> input`
-     * @returns {[{value: String, custom_id: String}]}
+     * @returns {Map<String, ModalComponent>}
      */
     getComponents() {
         const m = new Map();
@@ -96,9 +97,10 @@ export class Modal extends Interaction {
     }
 
     toObj() {
+        if (this.components.size == 0) throw "MODAL MUST HAVE AT LEAST 1 COMPONENT!";
         const obj = {title: this.title, custom_id: this.custom_id, components: []};
-        for (const key in this.components) {
-            const comp = this.components.get(key);
+
+        for (const [key, comp] of this.components) {
             const a = new MessageActionRow();
             a.addComponent(comp);
             obj.components.push(a.toObj());

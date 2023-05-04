@@ -60,6 +60,16 @@ export class Interaction extends DataManager {
     /** @type {interactionOptions} */
     data;
 
+    async deferReply() {
+        try {
+            await this.client.axiosCustom.post(`/interactions/${this.id}/${this.#token}/callback`, {
+                type: 5
+            });
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     /**
      * @param {Modal} m 
      */
