@@ -151,8 +151,11 @@ export class Client extends EventEmitter {
 
     /**
      * @param {String} token
+     * @param {Boolean} isUser
      */
     async login(token, isUser = false) {
+        if (!token) throw "PLEASE PROVIDE A TOKEN!";
+
         if (!isUser) token = "Bot " + token;
         this.axiosCustom = axios.create({
             baseURL: "https://discord.com/api/",

@@ -25,6 +25,6 @@ export default async (message) => {
         // console.log(messages);
     } else {
         // console.log(message);
-        console.log(`Guild message recieved from "${message.guild.name}"`);
+        console.log(`Guild message recieved from "${message.guild?.name}"`);
     }
 }

@@ -3,7 +3,7 @@ import { Client, gateWayIntents, message, Interaction } from '../structures/type
 import config from '../config.json' assert { type: 'json' };
 import { buttonTests } from './Buttontests.js';
 import { createMenuTests } from './menuTests.js';
-const { bottoken } = config;
+const { token } = config;
 
 // switchConsoleDefault();
 
@@ -24,7 +24,7 @@ var c = new Client({
 });
 
 
-c.login(bottoken);
+c.login(token, true);
 
 
 c.on('messageRecieved', /**@param {message} message*/ async (message) => {
