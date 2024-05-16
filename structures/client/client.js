@@ -23,10 +23,10 @@ export class Client extends EventEmitter {
 
     /** @type {gateWayEvents[]} */
     gwintents;
-    
+
     /** @type {String} */
     #token;
-    
+
     /** @type {String} */
     id;
 
@@ -35,7 +35,7 @@ export class Client extends EventEmitter {
 
     /** @type {Object} */
     user_settings;
-    
+
     /** @type {Object} */
     user_profile;
 
@@ -60,7 +60,7 @@ export class Client extends EventEmitter {
     async #heartbeat(hbInt, hbSequence) {
         const toSend = JSON.stringify({ op: 1, d: 0 });
         this.ws.send((toSend));
-        
+
         setInterval(() => {
             this.ws.send(toSend);
         }, hbInt);
@@ -69,8 +69,7 @@ export class Client extends EventEmitter {
     /**
      * @param {Number} hbint
      */
-    async #startHeartBeat(hbint)
-    {
+    async #startHeartBeat(hbint) {
         this.heartBeatInterval = hbint;
         console.log("INTERVAL SET TO: " + this.heartBeatInterval);
         this.#heartbeat(hbint);
@@ -87,8 +86,11 @@ export class Client extends EventEmitter {
         this.user_settings = response.config;
         this.id = response.profile.id;
 
-        const commandsRaw = (await this.axiosCustom.get(`applications/${this.id}/commands`)).data;
-        this.commands = new InteractionManager(commandsRaw, this);
+        if (!this.isUser) {
+            const commandsRaw = (await this.axiosCustom.get(`applications/${this.id}/commands`)).data;
+            this.commands = new InteractionManager(commandsRaw, this);
+        }
+        
         this.emit('ready');
     }
 
@@ -166,12 +168,13 @@ export class Client extends EventEmitter {
             return response;
         }, function (err) {
             console.log(err.response.data);
-            throw `REQUEST FAILED WITH STATUS CODE ${err.response.status} AND REASON "${JSON.stringify(err.response.data)}"`;
+            // throw `REQUEST FAILED WITH STATUS CODE ${err.response.status} AND REASON "${JSON.stringify(err.response.data)}"`;
         });
-        
+
         return new Promise((resolve, reject) => {
-            this.ws = new WebSocket("wss://gateway.discord.gg/?v=10&encoding=json");
+            this.ws = new WebSocket("wss://gateway.discord.gg/?v=9&encoding=json");
             this.#token = token;
+            this.isUser = isUser;
 
             this.ws.on('open', () => {
                 //Get the user intents
@@ -179,7 +182,7 @@ export class Client extends EventEmitter {
                 for (let i of this.gwintents) {
                     iCount += (i) ? i : 0;
                 }
-                
+
                 var idObj = {
                     op: 2,
                     d: {
@@ -192,7 +195,7 @@ export class Client extends EventEmitter {
                         }
                     }
                 };
-        
+
                 this.ws.send(JSON.stringify(idObj));
             });
 
@@ -203,37 +206,37 @@ export class Client extends EventEmitter {
                 if (response.op == 10) { return this.#startHeartBeat(response.heartBeat, token); }
 
                 else if (response.op == 0) {
-                    switch(response.t) {
+                    switch (response.t) {
                         case gateWayEvents.Ready: this.ready(response);
-                        break;
+                            break;
 
                         case gateWayEvents.MessageCreate:
-                            if (data["d"]["author"]["id"] != this.user_profile.id){
+                            if (data["d"]["author"]["id"] != this.user_profile.id) {
                                 response.message.guild = this.guilds.get(response.message.guild_id);
                                 this.messageRecieved(response.message);
                             }
-                        break;
+                            break;
 
                         case gateWayEvents.InteractionCreate: this.interactionRecieved(data, response);
-                        break;
+                            break;
 
                         case gateWayEvents.GuildCreate: this.guildCreate(response.guild);
-                        break;
+                            break;
 
                         case gateWayEvents.GuildDelete: this.guildDelete(response.guild);
-                        break;
+                            break;
 
                         case gateWayEvents.GuildMemberAdd: this.guildMemberAdd(response.member);
-                        break;
+                            break;
 
                         case gateWayEvents.ThreadCreate: this.threadCreate(response.threadRaw);
-                        break;
+                            break;
 
                         case gateWayEvents.ThreadUpdate: this.threadEdit(response.threadRaw);
-                        break;
+                            break;
 
                         case gateWayEvents.ThreadDelete: this.ThreadDelete(response.threadRaw);
-                        break;
+                            break;
 
                         default: // console.log(response.t);
                     }
@@ -259,4 +262,4 @@ export class Client extends EventEmitter {
 
 
 //All client properties will be re-routed through this export
-export {gateWayIntents} from '../gateway/intents.js';
+export { gateWayIntents } from '../gateway/intents.js';

@@ -2,7 +2,7 @@
   "name": "iondiscordjs",
   "version": "1.0.2",
   "description": "because discord.js is annoying",
-  "main": "tests\\test.js",
+  "main": "tests/test.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
