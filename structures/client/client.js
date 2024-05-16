@@ -168,7 +168,7 @@ export class Client extends EventEmitter {
             return response;
         }, function (err) {
             console.log(err.response.data);
-            // throw `REQUEST FAILED WITH STATUS CODE ${err.response.status} AND REASON "${JSON.stringify(err.response.data)}"`;
+            throw `REQUEST FAILED WITH STATUS CODE ${err.response.status} AND REASON "${JSON.stringify(err.response.data)}"`;
         });
 
         return new Promise((resolve, reject) => {
