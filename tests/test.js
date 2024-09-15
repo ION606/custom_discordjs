@@ -1,6 +1,6 @@
 import switchConsoleDefault from '../utils/consoleToFile.js';
 import { Client, gateWayIntents, message, Interaction } from '../structures/types.js';
-import config from '../config.json' assert { type: 'json' };
+import config from '../config.json' with { type: 'json' };
 import { buttonTests } from './Buttontests.js';
 import { createMenuTests } from './menuTests.js';
 const { token } = config;
